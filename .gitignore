@@ -1,2 +1,5 @@
 .env
-__init__.py
+__pycache__/
+*.pyc
+venv/
+.vscode/
