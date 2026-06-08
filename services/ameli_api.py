@@ -1,4 +1,5 @@
 import requests
+from services.cache import avec_cache
 
 class AmeliAPI:
     """Service d'accès à l'API data.ameli.fr."""
@@ -9,6 +10,7 @@ class AmeliAPI:
         self._timeout = timeout
         self._session = requests.Session()
 
+    @avec_cache(duree_vie_seconde=300)
     def get_effectifs(self, profession, departement_code, annee):
         """Effectifs pour une profession, un département et une année.
         Retourne une liste de dictionnaires {annee, effectif, densite}.
@@ -25,6 +27,7 @@ class AmeliAPI:
             {"select": "annee,effectif,densite", "where": where, "limit": 100},
         )
     
+    @avec_cache(duree_vie_seconde=600)
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""
         where = (f"profession_sante=\"{profession}\" AND "
