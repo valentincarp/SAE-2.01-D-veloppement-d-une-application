@@ -14,28 +14,28 @@ class AmeliAPI:
         Retourne une liste de dictionnaires {annee, effectif, densite}.
         """
         where = (
-        f"profession_sante=\"{profession}\" AND "
-        f"departement=\"{departement_code}\" AND "
-        f"year(annee)={annee} AND "
-        f"libelle_classe_age=\"Tout âge\" AND "
-        f"libelle_sexe=\"tout sexe\""
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"year(annee)={annee} AND "
+            f"libelle_classe_age=\"Tout âge\" AND "
+            f"libelle_sexe=\"tout sexe\""
         )
         return self._requete(
-        "demographie-effectifs-et-les-densites",
-        {"select": "annee,effectif,densite", "where": where, "limit": 100},
+            "demographie-effectifs-et-les-densites",
+            {"select": "annee,effectif,densite", "where": where, "limit": 100},
         )
     
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""
         where = (f"profession_sante=\"{profession}\" AND "
-        f"departement=\"{departement_code}\" AND "
-        f"libelle_classe_age=\"Tout âge\" AND "
-        f"libelle_sexe=\"tout sexe\""
+            f"departement=\"{departement_code}\" AND "
+            f"libelle_classe_age=\"Tout âge\" AND "
+            f"libelle_sexe=\"tout sexe\""
         )
         return self._requete(
-        "demographie-effectifs-et-les-densites",
-        {"select": "annee,effectif,densite", "where": where,
-        "order_by": "annee", "limit": 100},
+            "demographie-effectifs-et-les-densites",
+            {"select": "annee,effectif,densite", "where": where,
+            "order_by": "annee", "limit": 100},
         )
 
     def _requete(self, dataset, params):
