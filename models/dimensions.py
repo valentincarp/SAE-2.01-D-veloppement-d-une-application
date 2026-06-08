@@ -9,7 +9,7 @@ class Region(Base):
     code = Column(String(10), nullable=False, unique=True)
     libelle = Column(String(100), nullable=False)
     departements = relationship("Departement", backref="region")
-    def __repr__(self): return f"{self.code} – {self.libelle}"
+    def __repr__(self): return f"{self.code} - {self.libelle}"
 
 class Departement(Base):
     __tablename__ = "departement"
@@ -17,7 +17,7 @@ class Departement(Base):
     code = Column(String(10), nullable=False, unique=True)
     libelle = Column(String(100), nullable=False)
     region_id = Column(Integer, ForeignKey("region.id"), nullable=False)
-    def __repr__(self): return f"{self.code} – {self.libelle}"
+    def __repr__(self): return f"{self.code} - {self.libelle}"
 
 # ── Dimensions métier ────────────────────────────────────────────────
 class ProfessionSante(Base):
