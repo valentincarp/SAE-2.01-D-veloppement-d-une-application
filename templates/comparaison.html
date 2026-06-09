@@ -31,7 +31,7 @@
 
             <label for="departement1">Département</label>
             <select name="departement1_id" id="departement1" required>
-                <option value="">-- Choisir une région --</option>
+                <option value="">-- Choisir un département --</option>
                 {% if dept1 %}
                     <option value="{{ dept1.id }}" selected>{{ dept1.code }} - {{ dept1.libelle }}</option>
                 {% endif %}
@@ -48,7 +48,7 @@
 
             <label for="departement2">Département</label>
             <select name="departement2_id" id="departement2" required>
-                <option value="">-- Choisir une région --</option>
+                <option value="">-- Choisir un département --</option>
                 {% if dept2 %}
                     <option value="{{ dept2.id }}" selected>{{ dept2.code }} - {{ dept2.libelle }}</option>
                 {% endif %}
@@ -136,43 +136,5 @@
         </div>
     {% endif %}
 
-    <script>
-        // Gestion des cascades pour la région 1 et département 1
-        document.getElementById("region1").addEventListener("change", async (e) => {
-            const regionId = e.target.value;
-            const selectDept = document.getElementById("departement1");
-            
-            selectDept.innerHTML = '<option value="">-- Choisir --</option>';
-            if (!regionId) return;
-            
-            const response = await fetch(`/api/departements/${regionId}`);
-            const depts = await response.json();
-            
-            for (const dept of depts) {
-                const opt = document.createElement("option");
-                opt.value = dept.id;
-                opt.textContent = `${dept.code} - ${dept.libelle}`;
-                selectDept.appendChild(opt);
-            }
-        });
-
-        // Gestion des cascades pour la région 2 et département 2
-        document.getElementById("region2").addEventListener("change", async (e) => {
-            const regionId = e.target.value;
-            const selectDept = document.getElementById("departement2");
-            
-            selectDept.innerHTML = '<option value="">-- Choisir --</option>';
-            if (!regionId) return;
-            
-            const response = await fetch(`/api/departements/${regionId}`);
-            const depts = await response.json();
-            
-            for (const dept of depts) {
-                const opt = document.createElement("option");
-                opt.value = dept.id;
-                opt.textContent = `${dept.code} - ${dept.libelle}`;
-                selectDept.appendChild(opt);
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/cascade_comparaison.js') }}"></script>
 {% endblock %}
