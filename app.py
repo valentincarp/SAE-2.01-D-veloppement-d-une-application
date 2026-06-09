@@ -3,6 +3,7 @@ from config import Config
 from controllers.accueil import bp_accueil
 from controllers.api import bp_api
 from controllers.effectifs import bp_effectifs
+from controllers.comparaison import bp_comparaison
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -11,6 +12,7 @@ app.config.from_object(Config)
 app.register_blueprint(bp_accueil)
 app.register_blueprint(bp_api)
 app.register_blueprint(bp_effectifs)
+app.register_blueprint(bp_comparaison)
 
 @app.errorhandler(404)
 def page_non_trouvee(e):
