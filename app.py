@@ -3,7 +3,6 @@ from config import Config
 from controllers.accueil import bp_accueil
 from controllers.api import bp_api
 from controllers.effectifs import bp_effectifs
-# Ajout pour la partie export en CSV et PDF
 from controllers.export import bp_export
 
 
@@ -14,7 +13,6 @@ app.config.from_object(Config)
 app.register_blueprint(bp_accueil)
 app.register_blueprint(bp_api)
 app.register_blueprint(bp_effectifs)
-# partie CSV et PDF
 app.register_blueprint(bp_export)
 
 @app.errorhandler(404)
