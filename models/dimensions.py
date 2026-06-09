@@ -50,7 +50,7 @@ class TypeSecteur(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(String(20), nullable=False, unique=True)
     libelle = Column(String(200), nullable=False)
-    def __repr__(self): return f"{self.code} – {self.libelle}"
+    def __repr__(self): return f"{self.code} - {self.libelle}"
 
 # ── Dimensions financières ──────────────────────────────────────────────
 #80 pour respecter le cahier des charges
