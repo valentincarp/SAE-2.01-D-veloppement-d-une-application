@@ -19,6 +19,23 @@
     {% else %}
         <p>Aucune donnée disponible pour cette sélection.</p>
     {% endif %}
+
+    
+    <div class="export-buttons">
+        <a href="{{ url_for('export.export_csv',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee) }}">
+            Exporter CSV
+        </a>
+        <a href="{{ url_for('export.export_pdf',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee) }}">
+            Exporter PDF
+        </a>
+    </div>
+
     <h3>Évolution sur plusieurs années</h3>
     <canvas id="graphique"></canvas>
 
@@ -38,4 +55,5 @@
             },
         });
     </script>
+
 {% endblock %}
