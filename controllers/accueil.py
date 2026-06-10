@@ -14,3 +14,4 @@ def index():
         return render_template("accueil.html", regions=regions, professions=professions)
     finally:
         session.close()
+        
