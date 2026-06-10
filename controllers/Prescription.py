@@ -8,7 +8,6 @@ api = AmeliAPI()
 
 @bp_prescription.route("/prescriptions")
 def afficher():
-    """Affiche les effectifs pour la sélection de l'utilisateur."""
     profession_id = request.args.get("profession_id", type=int)
     departement_id = request.args.get("departement_id", type=int)
     annee = request.args.get("annee", type=int)

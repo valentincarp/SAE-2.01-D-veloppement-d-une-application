@@ -51,3 +51,16 @@ class AmeliAPI:
         except requests.RequestException as e:
             print(f"[AmeliAPI] Erreur : {e}")
         return []
+    
+    @avec_cache(duree_vie_seconde=300)
+    def get_prescriptions(self, profession, departement_code, annee, poste):
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"year(annee)={annee} AND "
+            f"poste_prescription={poste}"
+        )
+        return self._requete(
+            "prescriptions",
+        {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where, "limit": 100},
+        )
