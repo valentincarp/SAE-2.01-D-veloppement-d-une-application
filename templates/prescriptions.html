@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titre %}prescriptions{% endblock %}
+{% block contenu %}
+    <h2>{{ prof.libelle }} – {{ dept.code }} {{ dept.libelle }} – {{ annee }}</h2>
+{% if resultats %}
+<table>
+    <thead>
+        <tr>
+            <th>Année</th>
+            <th>poste</th>
+            <th>libelle poste</th>
+            <th>montant total</th>
+            <th>montant moyen</th>
+        </tr>
+    </thead>
+<tbody>
+    {% for r in resultats %}
+    <tr>
+        <td>{{ r.annee }}</td>
+        <td>{{ r.poste_prescription }}</td>
+        <td>{{ r.libelle_poste_prescription }}</td>
+        <td>{{ r.montant_total_prescription }}</td>
+        <td>{{ r.montant_moyen_prescription }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% else %}
+<p>Aucune donnée disponible pour cette sélection.</p>
+{% endif %}
+{% endblock %}
