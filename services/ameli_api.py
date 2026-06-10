@@ -64,3 +64,16 @@ class AmeliAPI:
             "prescriptions",
         {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where, "limit": 100},
         )
+    
+    @avec_cache(duree_vie_seconde=600)
+    def get_evolution_prescriptions(self, profession, departement_code, poste):
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"poste_prescription={poste}"
+        )
+        return self._requete(
+            "prescriptions",
+        {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where,
+            "order_by": "annee", "limit": 100},
+        )
