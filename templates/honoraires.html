@@ -30,7 +30,11 @@
     </select>
 
     <label for="annee">Année :</label>
-    <input type="number" name="annee" id="annee" value="2022" min="2010" max="2026">
+    <select name="annee" id="annee" required>
+        {% for a in range(2023, 2014, -1) %}
+            <option value="{{ a }}" {% if annee == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+    </select>
 
     <button type="submit">Consulter</button>
     </form>
