@@ -24,3 +24,22 @@ footer {
  color: #777;
  border-top: 1px solid #ddd;
 }
+
+/* affichage des boutons d'export */
+.export-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.export-buttons a {
+    background-color: #2E74B5;
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.export-buttons a:hover {
+    background-color: #1a5a9a;
+}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block titre %}Comparaison{% endblock %}
+{% block contenu %}
+    <h2>Comparaison entre 2 départements</h2>
+    
+    <div class="formulaires-comparaison">
+        <form action="{{ url_for('comparaison.comparaison') }}" method="get">
+            <label for="profession">Profession</label>
+            <select name="profession_id" id="profession" required>
+                <option value="">-- Choisir --</option>
+                {% for p in professions %}
+                    <option value="{{ p.id }}" {% if prof and prof.id == p.id %}selected{% endif %}>{{ p.libelle }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="annee">Année</label>
+            <select name="annee" id="annee" required>
+                {% for a in range(2023, 2014, -1) %}
+                    <option value="{{ a }}" {% if annee == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+
+            <h3>Département 1</h3>
+            <label for="region1">Région</label>
+            <select name="region1_id" id="region1" required>
+                <option value="">-- Choisir --</option>
+                {% for r in regions %}
+                    <option value="{{ r.id }}">{{ r.libelle }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="departement1">Département</label>
+            <select name="departement1_id" id="departement1" required>
+                <option value="">-- Choisir un département --</option>
+                {% if dept1 %}
+                    <option value="{{ dept1.id }}" selected>{{ dept1.code }} - {{ dept1.libelle }}</option>
+                {% endif %}
+            </select>
+
+            <h3>Département 2</h3>
+            <label for="region2">Région</label>
+            <select name="region2_id" id="region2" required>
+                <option value="">-- Choisir --</option>
+                {% for r in regions %}
+                    <option value="{{ r.id }}">{{ r.libelle }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="departement2">Département</label>
+            <select name="departement2_id" id="departement2" required>
+                <option value="">-- Choisir un département --</option>
+                {% if dept2 %}
+                    <option value="{{ dept2.id }}" selected>{{ dept2.code }} - {{ dept2.libelle }}</option>
+                {% endif %}
+            </select>
+            <button type="submit">Comparer</button>
+        </form>
+    </div>
+
+    {% if prof and dept1 and dept2 %}
+        <div class="resultats-comparaison">
+            <h3>{{ prof.libelle }} - Année {{ annee }}</h3>
+            <p>Comparaison entre <strong>{{ dept1.code }} - {{ dept1.libelle }}</strong> et <strong>{{ dept2.code }} - {{ dept2.libelle }}</strong></p>
+
+            {% if evolution1 and evolution2 %}
+                <div class="graphique-container">
+                    <h4>Évolution des effectifs</h4>
+                    <canvas id="graphique-comparaison"></canvas>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    const donnees1 = {{ evolution1|tojson }};
+                    const donnees2 = {{ evolution2|tojson }};
+                    
+                    // Fusionner les labels (années)
+                    const allLabels = [...new Set([
+                        ...donnees1.map(d => d.annee),
+                        ...donnees2.map(d => d.annee)
+                    ])].sort();
+                    
+                    new Chart(document.getElementById("graphique-comparaison"), {
+                        type: "line",
+                        data: {
+                            labels: allLabels,
+                            datasets: [
+                                {
+                                    label: "{{ dept1.code }} - {{ dept1.libelle }}",
+                                    data: allLabels.map(year => {
+                                        const d = donnees1.find(d => d.annee == year);
+                                        return d ? d.effectif : null;
+                                    }),
+                                    borderColor: "#2E74B5",
+                                    backgroundColor: "rgba(46, 116, 181, 0.1)",
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    fill: false,
+                                },
+                                {
+                                    label: "{{ dept2.code }} - {{ dept2.libelle }}",
+                                    data: allLabels.map(year => {
+                                        const d = donnees2.find(d => d.annee == year);
+                                        return d ? d.effectif : null;
+                                    }),
+                                    borderColor: "#E74C3C",
+                                    backgroundColor: "rgba(231, 76, 60, 0.1)",
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    fill: false,
+                                }
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Effectif'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                </script>
+            {% else %}
+                <p>Aucune donnée disponible pour cette comparaison.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/cascade_comparaison.js') }}"></script>
+{% endblock %}
