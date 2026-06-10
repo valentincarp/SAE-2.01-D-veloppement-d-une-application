@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 from models.db import Session
-from models.dimensions import ProfessionSante, Departement
+from models.dimensions import ProfessionSante, Departement, Region
 from services.ameli_api import AmeliAPI
 
 bp_prescription = Blueprint("prescriptions", __name__)
@@ -17,13 +17,18 @@ def afficher():
     try:
         prof = session.get(ProfessionSante, profession_id)
         dept = session.get(Departement, departement_id)
-        if not prof or not dept or not annee:
-            return render_template("erreur.html", message="Paramètres manquants."), 400
+        regions = session.query(Region).order_by(Region.libelle).all()
+        professions = session.query(ProfessionSante).order_by(ProfessionSante.libelle).all()
+        if not profession_id or not departement_id or not annee:
+            return render_template("prescriptions.html",
+            regions=regions, professions=professions,
+            prof=None, resultats=None)
         resultats = api.get_prescriptions(prof.libelle, dept.code, annee, poste_prescription)
         evolution = api.get_evolution_prescriptions(prof.libelle, dept.code, poste_prescription)
 
         return render_template("prescriptions.html",
             prof=prof, dept=dept, annee=annee,
-            resultats=resultats, evolution=evolution)
+            resultats=resultats, evolution=evolution,
+            regions=regions, professions=professions)
     finally:
         session.close()
