@@ -20,6 +20,12 @@
                 {% endfor %}
             </select>
 
+            <label for="type_comparaison">Type de comparaison</label>
+            <select name="type_comparaison" id="type_comparaison" required>
+                <option value="effectifs" {% if type_comparaison == 'effectifs' %}selected{% endif %}>Effectifs</option>
+                <option value="honoraires" {% if type_comparaison == 'honoraires' %}selected{% endif %}>Honoraires</option>
+            </select>
+
             <h3>Département 1</h3>
             <label for="region1">Région</label>
             <select name="region1_id" id="region1" required>
@@ -64,7 +70,7 @@
 
             {% if evolution1 and evolution2 %}
                 <div class="graphique-container">
-                    <h4>Évolution des effectifs</h4>
+                    <h4>{% if type_comparaison == 'effectifs' %}Évolution des effectifs{% else %}Évolution des honoraires{% endif %}</h4>
                     <canvas id="graphique-comparaison"></canvas>
                 </div>
 
@@ -72,12 +78,24 @@
                 <script>
                     const donnees1 = {{ evolution1|tojson }};
                     const donnees2 = {{ evolution2|tojson }};
+                    const typeComparaison = "{{ type_comparaison }}";
                     
                     // Fusionner les labels (années)
                     const allLabels = [...new Set([
                         ...donnees1.map(d => d.annee),
                         ...donnees2.map(d => d.annee)
                     ])].sort();
+                    
+                    let dataKey1, dataKey2, yAxisLabel;
+                    if (typeComparaison === "effectifs") {
+                        dataKey1 = "effectif";
+                        dataKey2 = "effectif";
+                        yAxisLabel = "Effectif";
+                    } else if (typeComparaison === "honoraires") {
+                        dataKey1 = "hono_sans_depassement_totaux";
+                        dataKey2 = "hono_sans_depassement_totaux";
+                        yAxisLabel = "Montant (€)";
+                    }
                     
                     new Chart(document.getElementById("graphique-comparaison"), {
                         type: "line",
@@ -88,7 +106,7 @@
                                     label: "{{ dept1.code }} - {{ dept1.libelle }}",
                                     data: allLabels.map(year => {
                                         const d = donnees1.find(d => d.annee == year);
-                                        return d ? d.effectif : null;
+                                        return d ? d[dataKey1] : null;
                                     }),
                                     borderColor: "#2E74B5",
                                     backgroundColor: "rgba(46, 116, 181, 0.1)",
@@ -100,7 +118,7 @@
                                     label: "{{ dept2.code }} - {{ dept2.libelle }}",
                                     data: allLabels.map(year => {
                                         const d = donnees2.find(d => d.annee == year);
-                                        return d ? d.effectif : null;
+                                        return d ? d[dataKey2] : null;
                                     }),
                                     borderColor: "#E74C3C",
                                     backgroundColor: "rgba(231, 76, 60, 0.1)",
@@ -123,7 +141,7 @@
                                     beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Effectif'
+                                        text: yAxisLabel
                                     }
                                 }
                             }

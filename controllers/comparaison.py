@@ -8,11 +8,12 @@ api = AmeliAPI()
 
 @bp_comparaison.route("/comparaison")
 def comparaison():
-    """Affiche la page de comparaison des effectifs entre 2 départements."""
+    """Affiche la page de comparaison entre 2 départements."""
     profession_id = request.args.get("profession_id", type=int)
     departement1_id = request.args.get("departement1_id", type=int)
     departement2_id = request.args.get("departement2_id", type=int)
     annee = request.args.get("annee", type=int)
+    type_comparaison = request.args.get("type_comparaison", default="effectifs")
 
     session = Session()
     try:
@@ -36,13 +37,18 @@ def comparaison():
             if not prof or not dept1 or not dept2:
                 return render_template("erreur.html", message="Paramètres invalides."), 400
             
-            # Récupération des données d'évolution
-            evolution1 = api.get_evolution_effectifs(prof.libelle, dept1.code)
-            evolution2 = api.get_evolution_effectifs(prof.libelle, dept2.code)
+            # Récupération des données d'évolution selon le type de comparaison
+            if type_comparaison == "effectifs":
+                evolution1 = api.get_evolution_effectifs(prof.libelle, dept1.code)
+                evolution2 = api.get_evolution_effectifs(prof.libelle, dept2.code)
+            elif type_comparaison == "honoraires":
+                evolution1 = api.get_evolution_honoraires(prof.libelle, dept1.code, "")
+                evolution2 = api.get_evolution_honoraires(prof.libelle, dept2.code, "")
 
         return render_template("comparaison.html",
             regions=regions, professions=professions,
             prof=prof, dept1=dept1, dept2=dept2, annee=annee,
-            evolution1=evolution1, evolution2=evolution2)
+            evolution1=evolution1, evolution2=evolution2,
+            type_comparaison=type_comparaison)
     finally:
         session.close()
