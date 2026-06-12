@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block titre %}prescriptions{% endblock %}
+{% block titre %}Prescriptions{% endblock %}
 {% block contenu %}
     {% if prof %}
-    <h2>{{ prof.libelle }} – {{ dept.code }} {{ dept.libelle }} – {{ annee }}</h2>
+    <h2>{{ prof.libelle }} - {{ dept.code }} {{ dept.libelle }} - {{ annee }}</h2>
     {% endif %}
     <h2>Consulter les prescriptions</h2>
     <form action="{{ url_for('prescriptions.afficher') }}" method="get">
@@ -30,46 +30,68 @@
             <option value="{{ a }}">{{ a }}</option>
         {% endfor %}
     </select>
-    <label for="poste">Poste de prescription</label>
-<select name="poste_prescription" id="poste" required>
-    <option value="">-- Choisir --</option>
-    <option value="1">Médicaments</option>
-    <option value="2">Dispositifs médicaux</option>
-    <option value="3">Biologie</option>
-    <option value="4">Soins infirmiers</option>
-    <option value="5">Kinésithérapie</option>
-    <option value="6">Transports des malades</option>
-    <option value="7">Indemnités journalières</option>
-    <option value="8">Autres</option>
-</select>
-    <button type="submit">Afficher les prescriptions</button>
-    </form>
-    <script>const BASE_URL = "{{ BASE_URL }}";</script>
-    <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
-{% if resultats %}
-<table>
-    <thead>
+    <label for="poste">Type de prescription</label>
+    <select name="poste_prescription" id="poste" required>
+        <option value="">-- Choisir --</option>
+        {% for t in types_prescriptions %}
+            <option value="{{ t.id }}">{{ t.libelle }}</option>
+        {% endfor %}
+    </select>
+        <button type="submit">Afficher les prescriptions</button>
+        </form>
+        <script>const BASE_URL = "{{ BASE_URL }}";</script>
+        <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
+    {% if resultats %}
+    <table>
+        <thead>
+            <tr>
+                <th>Année</th>
+                <th>Type de prescription</th>
+                <th>Libellé du poste</th>
+                <th>Montant total</th>
+                <th>Montant moyen</th>
+            </tr>
+        </thead>
+    <tbody>
+        {% for r in resultats %}
         <tr>
-            <th>Année</th>
-            <th>poste</th>
-            <th>libelle poste</th>
-            <th>montant total</th>
-            <th>montant moyen</th>
+            <td>{{ r.annee }}</td>
+            <td>{{ r.poste_prescription }}</td>
+            <td>{{ r.libelle_poste_prescription }}</td>
+            <td>{{ r.montant_total_prescription }} €</td>
+            <td>{{ r.montant_moyen_prescription }} €</td>
         </tr>
-    </thead>
-<tbody>
-    {% for r in resultats %}
-    <tr>
-        <td>{{ r.annee }}</td>
-        <td>{{ r.poste_prescription }}</td>
-        <td>{{ r.libelle_poste_prescription }}</td>
-        <td>{{ r.montant_total_prescription }}</td>
-        <td>{{ r.montant_moyen_prescription }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-{% else %}
-<p>Aucune donnée disponible pour cette sélection.</p>
-{% endif %}
+        {% endfor %}
+    </tbody>
+    </table>
+
+    <h3>Évolution sur plusieurs années</h3>
+    <canvas id="graphique"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const donnees = {{ evolution|tojson }};
+        new Chart(document.getElementById("graphique"), {
+            type: "bar",
+            data: {
+                labels: donnees.map(d => d.annee),
+                datasets: [{
+                    label: "Montant total",
+                    data: donnees.map(d => d.montant_total_prescription),
+                    borderColor: "#2E74B5",
+                    backgroundColor: "rgba(46, 116, 181, 0.5)",
+                    tension: 0.2,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                }
+            }
+        });
+    </script>
+    {% else %}
+    <p>Aucune donnée disponible pour cette sélection.</p>
+    {% endif %}
 {% endblock %}
