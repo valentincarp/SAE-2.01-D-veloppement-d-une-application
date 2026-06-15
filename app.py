@@ -7,6 +7,7 @@ from controllers.prescription import bp_prescription
 from controllers.honoraires import bp_honoraires
 from controllers.export import bp_export
 from controllers.comparaison import bp_comparaison
+from controllers.carte import bp_carte
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.register_blueprint(bp_prescription)
 app.register_blueprint(bp_honoraires)
 app.register_blueprint(bp_export)
 app.register_blueprint(bp_comparaison)
+app.register_blueprint(bp_carte)
 
 @app.errorhandler(404)
 def page_non_trouvee(e):
