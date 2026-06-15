@@ -26,39 +26,44 @@
                 <option value="honoraires" {% if type_comparaison == 'honoraires' %}selected{% endif %}>Honoraires</option>
             </select>
 
-            <h3>Département 1</h3>
-            <label for="region1">Région</label>
-            <select name="region1_id" id="region1" required>
-                <option value="">-- Choisir --</option>
-                {% for r in regions %}
-                    <option value="{{ r.id }}">{{ r.libelle }}</option>
-                {% endfor %}
-            </select>
+            <div class="dep1">
+                <h3>Département 1</h3>
+                <label for="region1">Région</label>
+                <select name="region1_id" id="region1" required>
+                    <option value="">-- Choisir --</option>
+                    {% for r in regions %}
+                        <option value="{{ r.id }}">{{ r.libelle }}</option>
+                    {% endfor %}
+                </select>
 
-            <label for="departement1">Département</label>
-            <select name="departement1_id" id="departement1" required>
-                <option value="">-- Choisir un département --</option>
-                {% if dept1 %}
-                    <option value="{{ dept1.id }}" selected>{{ dept1.code }} - {{ dept1.libelle }}</option>
-                {% endif %}
-            </select>
+                <label for="departement1">Département</label>
+                <select name="departement1_id" id="departement1" required>
+                    <option value="">-- Choisir --</option>
+                    {% if dept1 %}
+                        <option value="{{ dept1.id }}" selected>{{ dept1.code }} - {{ dept1.libelle }}</option>
+                    {% endif %}
+                </select>
+            </div>
 
-            <h3>Département 2</h3>
-            <label for="region2">Région</label>
-            <select name="region2_id" id="region2" required>
-                <option value="">-- Choisir --</option>
-                {% for r in regions %}
-                    <option value="{{ r.id }}">{{ r.libelle }}</option>
-                {% endfor %}
-            </select>
+            <div class="dep2">
+                <h3>Département 2</h3>
+                <label for="region2">Région</label>
+                <select name="region2_id" id="region2" required>
+                    <option value="">-- Choisir --</option>
+                    {% for r in regions %}
+                        <option value="{{ r.id }}">{{ r.libelle }}</option>
+                    {% endfor %}
+                </select>
 
-            <label for="departement2">Département</label>
-            <select name="departement2_id" id="departement2" required>
-                <option value="">-- Choisir un département --</option>
-                {% if dept2 %}
-                    <option value="{{ dept2.id }}" selected>{{ dept2.code }} - {{ dept2.libelle }}</option>
-                {% endif %}
-            </select>
+                <label for="departement2">Département</label>
+                <select name="departement2_id" id="departement2" required>
+                    <option value="">-- Choisir --</option>
+                    {% if dept2 %}
+                        <option value="{{ dept2.id }}" selected>{{ dept2.code }} - {{ dept2.libelle }}</option>
+                    {% endif %}
+                </select>
+            </div>
+
             <button type="submit">Comparer</button>
         </form>
     </div>
