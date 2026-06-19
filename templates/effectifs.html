@@ -1,9 +1,35 @@
 {% extends "base.html" %}
 {% block titre %}Effectifs{% endblock %}
 {% block contenu %}
-    <h2>{{ prof.libelle }} - {{ dept.code }} {{ dept.libelle }} - {{ annee }}</h2>
-
+    <form action="{{ url_for('effectifs.afficher') }}" method="get">
+        <label for="profession">Profession</label>
+        <select name="profession_id" id="profession" required>
+            <option value="">-- Choisir --</option>
+            {% for p in professions %}
+                <option value="{{ p.id }}">{{ p.libelle }}</option>
+            {% endfor %}
+        </select>
+        <label for="region">Région</label>
+        <select name="region_id" id="region" required>
+            <option value="">-- Choisir --</option>
+            {% for r in regions %}
+                <option value="{{ r.id }}">{{ r.libelle }}</option>
+            {% endfor %}
+        </select>
+        <label for="departement">Département</label>
+        <select name="departement_id" id="departement" required>
+            <option value="">-- Choisir une région --</option>
+        </select>
+        <label for="annee">Année</label>
+        <select name="annee" id="annee" required>
+            {% for a in range(2023, 2014, -1) %}
+                <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Afficher les effectifs</button>
+    </form>
     {% if resultats %}
+        <h2>{{ prof.libelle }} - {{ dept.code }} {{ dept.libelle }} - {{ annee }}</h2>
         <table>
             <thead><tr><th>Année</th><th>Effectif</th><th>Densité</th></tr></thead>
             <tbody>
@@ -16,12 +42,7 @@
                 {% endfor %}
             </tbody>
         </table>
-    {% else %}
-        <p>Aucune donnée disponible pour cette sélection.</p>
-    {% endif %}
-
-    
-    <div class="export-buttons">
+        <div class="export-buttons">
         <a href="{{ url_for('export.export_csv',
             profession_id=request.args.get('profession_id'),
             departement_id=request.args.get('departement_id'),
@@ -35,6 +56,10 @@
             Exporter PDF
         </a>
     </div>
+    {% else %}
+        <p>Aucune donnée disponible pour cette sélection.</p>
+
+
 
     <h3>Évolution sur plusieurs années</h3>
     <canvas id="graphique"></canvas>
@@ -55,5 +80,8 @@
             },
         });
     </script>
+    {% endif %}
+    <script>const BASE_URL = "{{ BASE_URL }}";</script>
+<script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
 
 {% endblock %}

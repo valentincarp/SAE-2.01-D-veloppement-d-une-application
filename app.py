@@ -8,7 +8,7 @@ from controllers.honoraires import bp_honoraires
 from controllers.export import bp_export
 from controllers.comparaison import bp_comparaison
 from controllers.carte import bp_carte
-
+from controllers.effectifs import bp_effectifs
 
 app = Flask(__name__)
 app.config.from_object(Config)
