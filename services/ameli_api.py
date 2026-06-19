@@ -27,6 +27,38 @@ class AmeliAPI:
             {"select": "annee,effectif,densite", "where": where, "limit": 100},
         )
     
+    @avec_cache(duree_vie_seconde=300)
+    def get_honoraires(self, profession, departement_code, annee):
+        # On filtre uniquement sur les dimensions, pas sur les valeurs financières
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"year(annee)={annee}"
+        )
+        # On demande à l'API de nous sélectionner les colonnes qui nous intéressent
+        return self._requete(
+            "honoraires", # Remets le nom exact du dataset ici
+            {"select": "annee, hono_sans_depassement_totaux, depassements_totaux", 
+             "where": where, 
+             "limit": 10}
+        )
+    
+    @avec_cache(duree_vie_seconde=600)
+    def get_evolution_honoraires(self, profession, departement_code):
+        """Honoraires sur toutes les années disponibles (pour un graphique d'évolution)."""
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\""
+        )
+        return self._requete(
+            "honoraires",
+            {"select": "annee, hono_sans_depassement_totaux, depassements_totaux",
+            "where": where,
+            "order_by": "annee",
+            "limit": 100},
+        )
+    
+    
     @avec_cache(duree_vie_seconde=600)
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""
@@ -51,3 +83,29 @@ class AmeliAPI:
         except requests.RequestException as e:
             print(f"[AmeliAPI] Erreur : {e}")
         return []
+    
+    @avec_cache(duree_vie_seconde=300)
+    def get_prescriptions(self, profession, departement_code, annee, poste):
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"year(annee)={annee} AND "
+            f"poste_prescription={poste}"
+        )
+        return self._requete(
+            "prescriptions",
+        {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where, "limit": 100},
+        )
+    
+    @avec_cache(duree_vie_seconde=600)
+    def get_evolution_prescriptions(self, profession, departement_code, poste):
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\" AND "
+            f"poste_prescription={poste}"
+        )
+        return self._requete(
+            "prescriptions",
+        {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where,
+            "order_by": "annee", "limit": 100},
+        )

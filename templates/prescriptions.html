@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block titre %}Prescriptions{% endblock %}
+{% block contenu %}
+    {% if prof %}
+    <h2>{{ prof.libelle }} - {{ dept.code }} {{ dept.libelle }} - {{ annee }}</h2>
+    {% endif %}
+    <h2>Consulter les prescriptions</h2>
+    <form action="{{ url_for('prescriptions.afficher') }}" method="get">
+    <label for="profession">Profession</label>
+    <select name="profession_id" id="profession" required>
+        <option value="">-- Choisir --</option>
+        {% for p in professions %}
+            <option value="{{ p.id }}">{{ p.libelle }}</option>
+        {% endfor %}
+    </select>
+    <label for="region">Région</label>
+    <select name="region_id" id="region" required>
+        <option value="">-- Choisir --</option>
+        {% for r in regions %}
+            <option value="{{ r.id }}">{{ r.libelle }}</option>
+        {% endfor %}
+    </select>
+    <label for="departement">Département</label>
+    <select name="departement_id" id="departement" required>
+        <option value="">-- Choisir une région --</option>
+    </select>
+    <label for="annee">Année</label>
+    <select name="annee" id="annee" required>
+        {% for a in range(2023, 2014, -1) %}
+            <option value="{{ a }}">{{ a }}</option>
+        {% endfor %}
+    </select>
+    <label for="poste">Type de prescription</label>
+    <select name="poste_prescription" id="poste" required>
+        <option value="">-- Choisir --</option>
+        {% for t in types_prescriptions %}
+            <option value="{{ t.id }}">{{ t.libelle }}</option>
+        {% endfor %}
+    </select>
+        <button type="submit">Afficher les prescriptions</button>
+        </form>
+        <script>const BASE_URL = "{{ BASE_URL }}";</script>
+        <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
+    {% if resultats %}
+    <table>
+        <thead>
+            <tr>
+                <th>Année</th>
+                <th>Type de prescription</th>
+                <th>Libellé du poste</th>
+                <th>Montant total</th>
+                <th>Montant moyen</th>
+            </tr>
+        </thead>
+    <tbody>
+        {% for r in resultats %}
+        <tr>
+            <td>{{ r.annee }}</td>
+            <td>{{ r.poste_prescription }}</td>
+            <td>{{ r.libelle_poste_prescription }}</td>
+            <td>{{ r.montant_total_prescription }} €</td>
+            <td>{{ r.montant_moyen_prescription }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+
+    <!-- Boutons d'export CSV et PDF -->
+    <div class="export-buttons">
+        <a href="{{ url_for('export.export_csv_prescription',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee,
+            poste_prescription=request.args.get('poste_prescription')) }}">
+            Exporter CSV
+        </a>
+        <a href="{{ url_for('export.export_pdf_prescription',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee,
+            poste_prescription=request.args.get('poste_prescription')) }}">
+            Exporter PDF
+        </a>
+    </div>
+
+    <h3>Évolution sur plusieurs années</h3>
+    <canvas id="graphique"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const donnees = {{ evolution|tojson }};
+        new Chart(document.getElementById("graphique"), {
+            type: "bar",
+            data: {
+                labels: donnees.map(d => d.annee),
+                datasets: [{
+                    label: "Montant total",
+                    data: donnees.map(d => d.montant_total_prescription),
+                    borderColor: "#2E74B5",
+                    backgroundColor: "rgba(46, 116, 181, 0.5)",
+                    tension: 0.2,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                }
+            }
+        });
+    </script>
+    {% else %}
+    <p>Aucune donnée disponible pour cette sélection.</p>
+    {% endif %}
+{% endblock %}
