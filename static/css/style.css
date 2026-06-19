@@ -118,3 +118,82 @@ select {
     background-position: right 12px center;
     padding-right: 40px;
 }
+
+/* ===== PAGE ACCUEIL ===== */
+
+.hero {
+    text-align: center;
+    padding: 50px 20px;
+    background: #f4f9ff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
+}
+
+.hero h1 {
+    color: #0a347c;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.btn-start {
+    display: inline-block;
+    background: #0a347c;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-start:hover {
+    background: #1249a8;
+}
+
+.infos {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.carte {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
+}
+
+.carte h3 {
+    color: #0a347c;
+    margin-top: 0;
+}
+
+.carte ul {
+    padding-left: 20px;
+    line-height: 1.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .infos {
+        flex-direction: column;
+    }
+}
+.carte {
+    background: #f4f9ff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
+}
+
+.carte h2 {
+    color: #0a347c;
+    margin-top: 0;
+}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block titre %}À propos{% endblock %}
+
+{% block contenu %}
+
+<h1>À propos du projet</h1>
+
+<section class="carte">
+    <h2>Présentation</h2>
+    <p>
+        Cette application a été développée dans le cadre de la SAE 2.01 du
+        BUT Informatique à l'IUT de Créteil-Vitry.
+    </p>
+
+    <p>
+        Son objectif est de permettre la consultation et l'analyse de données
+        de santé en France à partir des informations fournies par l'Assurance
+        Maladie.
+    </p>
+</section>
+
+<section class="carte">
+    <h2>Fonctionnalités</h2>
+    <ul>
+        <li>Consultation des effectifs des professionnels de santé</li>
+        <li>Analyse des densités par territoire</li>
+        <li>Consultation des honoraires</li>
+        <li>Analyse des prescriptions</li>
+        <li>Visualisation graphique des données</li>
+        <li>Export CSV et PDF</li>
+    </ul>
+</section>
+
+<section class="carte">
+    <h2>Technos utilisées</h2>
+    <ul>
+        <li>Python</li>
+        <li>Flask</li>
+        <li>SQLAlchemy</li>
+        <li>MySQL</li>
+        <li>HTML / CSS / JavaScript</li>
+    </ul>
+</section>
+
+<section class="carte">
+    <h2>Architecture MVC</h2>
+    <p>
+        Le projet suit l'architecture MVC (Modèle - Vue - Contrôleur).
+    </p>
+
+    <ul>
+        <li><strong>Modèle :</strong> accès aux données et API</li>
+        <li><strong>Vue :</strong> pages HTML et affichage</li>
+        <li><strong>Contrôleur :</strong> routes Flask et traitement des requêtes</li>
+    </ul>
+</section>
+
+<section class="carte">
+    <h2>Équipe</h2>
+    <ul>
+            <li>Diebate Assane</li>
+            <li>Carpinteiro-Lericq Valentin</li>
+            <li>Momperousse Nohlan</li>
+            <li>Sivault Arthur</li>
+            <li>Azzoug Sami</li>
+    </ul>
+</section>
+
+<section class="carte">
+    <h2>Sources des données</h2>
+    <p>
+        Les données utilisées proviennent de la base de données réalisée lors
+        de la SAE 2.04 ainsi que de l'API publique de l'Assurance Maladie.
+    </p>
+</section>
+
+{% endblock %}
