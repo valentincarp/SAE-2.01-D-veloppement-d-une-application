@@ -114,12 +114,7 @@
         if (donnees && donnees.length > 0) {
             // 2. Plus besoin de chercher ! On utilise directement les vraies clés figées par Python
             const professions = [...new Set(donnees.map(d => d.profession_sante))].sort();
-            const annees      = [...new Set(donnees.map(d => String(d.annee)))].sort();
-
-            function couleur(i) {
-                const teintes = [210, 220, 195, 230, 205, 215, 190, 225, 200, 235];
-                return `hsl(${teintes[i % teintes.length]}, 55%, 45%)`;
-            }
+            const annees = [...new Set(donnees.map(d => String(d.annee)))].sort();
 
             // 3. Construction des datasets avec les clés fixes
             const datasets = professions.map((prof, i) => ({
@@ -129,9 +124,8 @@
                     const row = donnees.find(d => d.profession_sante === prof && String(d.annee) === a);
                     return row ? row.montant_honoraires : null;
                 }),
-                borderColor: couleur(i),
-                backgroundColor: couleur(i) + "22",
-                borderWidth: 2,
+                borderColor: "#2E74B5",
+                backgroundColor: "rgba(46, 116, 181, 0.5)",
                 tension: 0.3,
                 spanGaps: true,
             }));
