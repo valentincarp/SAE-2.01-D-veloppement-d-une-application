@@ -10,7 +10,7 @@ from controllers.comparaison import bp_comparaison
 from services.ameli_api import AmeliAPI
 import time
 from controllers.carte import bp_carte
-
+from controllers.effectifs import bp_effectifs
 
 app = Flask(__name__)
 app.config.from_object(Config)
