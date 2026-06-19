@@ -79,6 +79,26 @@
                     <canvas id="graphique-comparaison"></canvas>
                 </div>
 
+                <!-- Boutons d'export CSV et PDF (visibles uniquement si des résultats sont affichés) -->
+                <div class="export-buttons">
+                    <a href="{{ url_for('export.export_csv_comparaison',
+                        profession_id=request.args.get('profession_id'),
+                        departement1_id=request.args.get('departement1_id'),
+                        departement2_id=request.args.get('departement2_id'),
+                        annee=annee,
+                        type_comparaison=type_comparaison) }}">
+                        Exporter CSV
+                    </a>
+                    <a href="{{ url_for('export.export_pdf_comparaison',
+                        profession_id=request.args.get('profession_id'),
+                        departement1_id=request.args.get('departement1_id'),
+                        departement2_id=request.args.get('departement2_id'),
+                        annee=annee,
+                        type_comparaison=type_comparaison) }}">
+                        Exporter PDF
+                    </a>
+                </div>
+
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
                     const donnees1 = {{ evolution1|tojson }};
@@ -136,18 +156,12 @@
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                }
+                                legend: { display: true, position: 'top' }
                             },
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: yAxisLabel
-                                    }
+                                    title: { display: true, text: yAxisLabel }
                                 }
                             }
                         }

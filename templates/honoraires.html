@@ -74,6 +74,26 @@
     </h2>
 
     {% if resultats %}
+    <p>Honoraires sans dépassement : {{ resultats[0].hono_sans_depassement_totaux }} €</p>
+    <p>Dépassements : {{ resultats[0].depassements_totaux }} €</p>
+
+    <!-- Boutons d'export CSV et PDF (visibles uniquement si des résultats sont affichés) -->
+    <div class="export-buttons">
+        <a href="{{ url_for('export.export_csv_honoraires',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            type_honoraire_id=request.args.get('type_honoraire_id'),
+            annee=annee) }}">
+            Exporter CSV
+        </a>
+        <a href="{{ url_for('export.export_pdf_honoraires',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            type_honoraire_id=request.args.get('type_honoraire_id'),
+            annee=annee) }}">
+            Exporter PDF
+        </a>
+    </div>
         <table class="comparaison-table">
             <thead>
                 <tr>

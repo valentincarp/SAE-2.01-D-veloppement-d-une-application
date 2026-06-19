@@ -65,6 +65,24 @@
     </tbody>
     </table>
 
+    <!-- Boutons d'export CSV et PDF -->
+    <div class="export-buttons">
+        <a href="{{ url_for('export.export_csv_prescription',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee,
+            poste_prescription=request.args.get('poste_prescription')) }}">
+            Exporter CSV
+        </a>
+        <a href="{{ url_for('export.export_pdf_prescription',
+            profession_id=request.args.get('profession_id'),
+            departement_id=request.args.get('departement_id'),
+            annee=annee,
+            poste_prescription=request.args.get('poste_prescription')) }}">
+            Exporter PDF
+        </a>
+    </div>
+
     <h3>Évolution sur plusieurs années</h3>
     <canvas id="graphique"></canvas>
 

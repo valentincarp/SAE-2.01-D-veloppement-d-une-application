@@ -94,6 +94,22 @@ class AmeliAPI:
             annee=None,
             profession=profession
         )
+    
+    @avec_cache(duree_vie_seconde=600)
+    def get_evolution_honoraires(self, profession, departement_code):
+        """Honoraires sur toutes les années disponibles (pour un graphique d'évolution)."""
+        where = (
+            f"profession_sante=\"{profession}\" AND "
+            f"departement=\"{departement_code}\""
+        )
+        return self._requete(
+            "honoraires",
+            {"select": "annee, hono_sans_depassement_totaux, depassements_totaux",
+            "where": where,
+            "order_by": "annee",
+            "limit": 100},
+        )
+    
 
         bruts = self._requete(
             "honoraires-detailles",
