@@ -1,50 +1,110 @@
 from flask import Blueprint, render_template, request
 from models.db import Session
-from models.dimensions import ProfessionSante, Departement, TypeHonoraire
-from services.ameli_api import AmeliAPI
+from models.dimensions import Departement, Region, TypeHonoraire, ProfessionSante
+from sqlalchemy import and_
 
 bp_honoraires = Blueprint("honoraires", __name__)
-api = AmeliAPI()
 
 @bp_honoraires.route("/honoraires")
 def afficher():
-    """Affiche les honoraires selon les filtres sélectionnés."""
-    #on récupère les paramètres de l'URL
-    profession_id = request.args.get("profession_id", type=int)
-    departement_id = request.args.get("departement_id", type=int)
-    type_honoraire_id = request.args.get("type_honoraire_id", type=int)
-    annee = request.args.get("annee", type=int)
-
     session = Session()
     try:
-        #on récupère les données pour les select du formulaire HTML
-        toutes_professions = session.query(ProfessionSante).all()
-        tous_departements = session.query(Departement).all()
-        tous_types_honoraires = session.query(TypeHonoraire).all()
-        
-        #pour stocker la recherche de l'utilisateur (vides par défaut) 
-        prof_selectionne = None
-        dept_selectionne = None
-        hono_selectionne = None
-        donnees_api = None
+        #Chargement des données globales pour les listes déroulantes
+        regions = session.query(Region).order_by(Region.libelle).all()
+        professions = session.query(ProfessionSante).order_by(ProfessionSante.libelle).all()
 
-        #if le formulaire a été soumis alors on recupere les infos
-        if profession_id and departement_id and type_honoraire_id and annee:
-            prof_selectionne = session.get(ProfessionSante, profession_id)
-            dept_selectionne = session.get(Departement, departement_id)
-            hono_selectionne = session.get(TypeHonoraire, type_honoraire_id)
-            if prof_selectionne and dept_selectionne and hono_selectionne:
-                donnees_api = api.get_honoraires(prof_selectionne.libelle, dept_selectionne.code, annee)                
+        #Récupération des IDs du formulaire
+        profession_id = request.args.get("profession_id", type=int) # Changé pour correspondre au HTML
+        region_id = request.args.get("region_id", type=int)
+        departement_id = request.args.get("departement_id", type=int)
+        annee = request.args.get("annee", type=int, default=2023)
         
-        #on renvoie le template de la page
-        return render_template("honoraires.html",
-                               professions=toutes_professions,
-                               departements=tous_departements,
-                               types_honoraires=tous_types_honoraires,
-                               prof_sel=prof_selectionne,
-                               dept_sel=dept_selectionne,
-                               hono_sel=hono_selectionne,
-                               annee=annee,
-                               resultats=donnees_api)
+        type_niv1 = request.args.get("type_niv1")
+        type_niv2 = request.args.get("type_niv2")
+        type_niv3 = request.args.get("type_niv3")
+
+        #Gestion des listes de cascades locales (pour ton HTML)
+        honoraires_niv1 = [r[0] for r in session.query(TypeHonoraire.niveau_1).distinct().order_by(TypeHonoraire.niveau_1).all()]
+        if len(honoraires_niv1) == 1 and not type_niv1:
+            type_niv1 = honoraires_niv1[0]
+
+        honoraires_niv2 = []
+        if type_niv1:
+            query_niv2 = session.query(TypeHonoraire.niveau_2)\
+                                .filter(TypeHonoraire.niveau_1 == type_niv1, TypeHonoraire.niveau_2.isnot(None))\
+                                .distinct().order_by(TypeHonoraire.niveau_2).all()
+            honoraires_niv2 = [r[0] for r in query_niv2]
+
+        honoraires_niv3 = []
+        if type_niv1:
+            filtre_niv3 = [TypeHonoraire.niveau_1 == type_niv1, TypeHonoraire.niveau_3.isnot(None)]
+            if type_niv2:
+                filtre_niv3.append(TypeHonoraire.niveau_2 == type_niv2)
+            query_niv3 = session.query(TypeHonoraire.niveau_3).filter(and_(*filtre_niv3)).distinct().order_by(TypeHonoraire.niveau_3).all()
+            honoraires_niv3 = [r[0] for r in query_niv3]
+
+        departements = []
+        if region_id:
+            departements = session.query(Departement).filter(Departement.region_id == region_id).order_by(Departement.libelle).all()
+
+        #Traitement et Requête API Ameli
+        dept = None
+        resultats = None
+        evolution = None
+
+        if profession_id and type_niv1 and type_niv2 and departement_id:
+            dept = session.get(Departement, departement_id)
+            prof_obj = session.get(ProfessionSante, profession_id)
+            
+            if dept and prof_obj:
+                if type_niv2 == "Dépassements":
+                    ameli_niv1 = "Dépassements"
+                    ameli_niv2 = None
+                else:
+                    ameli_niv1 = "Actes" 
+                    ameli_niv2 = "Actes cliniques" if type_niv3 == "Moyens" else None
+
+                from services.ameli_api import AmeliAPI
+                api = AmeliAPI()
+                
+                resultats = api.get_honoraires(ameli_niv1, ameli_niv2, None,
+                                               dept.code, annee, prof_obj.libelle)
+
+                try:
+                    evolution = api.get_evolution_honoraires(ameli_niv1, None, None,
+                                                             dept.code, prof_obj.libelle)
+                except Exception as e:
+                    print("Erreur lors de la récupération de l'évolution :", e)
+                    evolution = None
+
+        if isinstance(resultats, dict) and "results" in resultats:
+            resultats = resultats["results"]
+            
+        if isinstance(evolution, dict) and "results" in evolution:
+            evolution = evolution["results"]
+
+        #debug
+        print("debug tableau :", resultats)
+        print("debug graphe :", evolution)
+            
+        return render_template(
+            "honoraires.html",
+            regions=regions,
+            departements=departements,
+            professions=professions,
+            honoraires_niv1=honoraires_niv1,
+            honoraires_niv2=honoraires_niv2,
+            honoraires_niv3=honoraires_niv3,
+            profession_id=profession_id,
+            region_id=region_id,
+            departement_id=departement_id,
+            type_niv1=type_niv1,
+            type_niv2=type_niv2,
+            type_niv3=type_niv3,
+            dept=dept,
+            annee=annee,
+            resultats=resultats,
+            evolution=evolution
+        )
     finally:
         session.close()

@@ -7,8 +7,11 @@ from controllers.prescription import bp_prescription
 from controllers.honoraires import bp_honoraires
 from controllers.export import bp_export
 from controllers.comparaison import bp_comparaison
+from services.ameli_api import AmeliAPI
+import time
 from controllers.carte import bp_carte
-
+from controllers.effectifs import bp_effectifs
+from controllers.apropos import bp_a_propos
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -22,6 +25,13 @@ app.register_blueprint(bp_honoraires)
 app.register_blueprint(bp_export)
 app.register_blueprint(bp_comparaison)
 app.register_blueprint(bp_carte)
+app.register_blueprint(bp_a_propos)
+
+api = AmeliAPI()
+t = time.time(); api.get_effectifs("...", "75", 2023); print(time.time() - t)
+# 1er appel : ~0.5s
+t = time.time(); api.get_effectifs("...", "75", 2023); print(time.time() - t)
+# 2e appel : ~0.00002s
 
 @app.errorhandler(404)
 def page_non_trouvee(e):

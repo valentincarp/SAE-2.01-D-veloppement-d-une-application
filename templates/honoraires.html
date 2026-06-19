@@ -2,42 +2,76 @@
 {% block titre %}Honoraires{% endblock %}
 {% block contenu %}
     <h2>Consulter les honoraires</h2>
-    <p><a href="{{ url_for('accueil.index') }}">Retour à l'accueil</a></p>
+    <form action="{{ url_for('honoraires.afficher') }}" method="get">
 
-    <form action="{{ url_for('honoraires.afficher') }}" method="GET">
-    <label for="profession">Profession :</label>
-    <select name="profession_id" id="profession">
-        <option value="">-- Choisir une profession --</option>
-        {% for p in professions %}
-            <option value="{{ p.id }}">{{ p.libelle }}</option>
-        {% endfor %}
-    </select>
+        <label for="profession">Profession</label>
+        <select name="profession_id" id="profession" required>
+            <option value="">-- Choisir --</option>
+            {% for p in professions %}
+                <option value="{{ p.id }}" {% if p.id|string == profession_id|string %}selected{% endif %}>{{ p.libelle }}</option>
+            {% endfor %}
+        </select>
 
-    <label for="departement">Département :</label>
-    <select name="departement_id" id="departement">
-        <option value="">-- Choisir un département --</option>
-        {% for d in departements %}
-            <option value="{{ d.id }}">{{ d.code }} - {{ d.libelle }}</option>
-        {% endfor %}
-    </select>
+        <label for="region">Région</label>
+        <select name="region_id" id="region" required>
+            <option value="">-- Choisir --</option>
+            {% for r in regions %}
+                <option value="{{ r.id }}" {% if r.id|string == region_id|string %}selected{% endif %}>{{ r.libelle }}</option>
+            {% endfor %}
+        </select>
 
-    <label for="type_honoraire">Type d'honoraire :</label>
-    <select name="type_honoraire_id" id="type_honoraire">
-        <option value="">-- Choisir un type --</option>
-        {% for h in types_honoraires %}
-            <option value="{{ h.id }}">{{ h }}</option>
-        {% endfor %}
-    </select>
+        <label for="departement">Département</label>
+        <select name="departement_id" id="departement" required>
+            <option value="">-- Choisir --</option>
+        </select>
+            
+        <label for="type_niv1">Honoraires (Niveau 1)</label>
+        <select name="type_niv1" id="type_niv1">
+            <option value="">-- Tous --</option>
+            {% for h in honoraires_niv1 %}
+                <option value="{{ h }}" {% if h == type_niv1 %}selected{% endif %}>{{ h }}</option>
+            {% endfor %}
+        </select>
 
-    <label for="annee">Année :</label>
-    <select name="annee" id="annee" required>
-        {% for a in range(2023, 2014, -1) %}
-            <option value="{{ a }}" {% if annee == a %}selected{% endif %}>{{ a }}</option>
-        {% endfor %}
-    </select>
-    
-    <button type="submit">Consulter</button>
+        <label for="type_niv2">Type (Niveau 2)</label>
+        <select name="type_niv2" id="type_niv2">
+            <option value="">-- Tous --</option>
+            {% for h in honoraires_niv2 %}
+                <option value="{{ h }}" {% if h == type_niv2 %}selected{% endif %}>{{ h }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="type_niv3">Détail (Niveau 3)</label>
+        <select name="type_niv3" id="type_niv3">
+            <option value="">-- Tous --</option>
+            {% for h in honoraires_niv3 %}
+                <option value="{{ h }}" {% if h == type_niv3 %}selected{% endif %}>{{ h }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="annee">
+            Année : <span id="valeurAnnee">{{ annee or 2023 }}</span>
+        </label>
+        <input
+            type="range"
+            id="annee"
+            name="annee"
+            min="2015"
+            max="2024"
+            value="{{ annee or 2023 }}"
+            oninput="valeurAnnee.textContent = this.value">
+
+        <button type="submit">Afficher les honoraires</button>
     </form>
+
+    {% if profession_id and departement_id %}
+
+    <h2>
+        {% if type_niv1 %}: {{ type_niv1 }}{% endif %}
+        {% if type_niv2 %} - {{ type_niv2 }}{% endif %}
+        {% if type_niv3 %} - {{ type_niv3 }}{% endif %}
+        {% if dept %} - {{ dept.code }} {{ dept.libelle }}{% endif %} - {{ annee }}
+    </h2>
 
     {% if resultats %}
     <p>Honoraires sans dépassement : {{ resultats[0].hono_sans_depassement_totaux }} €</p>
@@ -60,9 +94,84 @@
             Exporter PDF
         </a>
     </div>
+        <table class="comparaison-table">
+            <thead>
+                <tr>
+                    <th>Profession de santé</th>
+                    <th>Montant des honoraires (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in resultats %}
+                    <tr>
+                        <td>{{ r.profession_sante }}</td>
+                        <td>
+                            {% if r.montant_honoraires is not none %}
+                                {{ "{:,}".format(r.montant_honoraires|int).replace(",", " ") }} €
+                            {% else %}
+                                0 € (Donnée non significative)
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
     {% else %}
-    <p>Aucune donnée trouvée pour cette sélection.</p>
+        <p>Aucune donnée disponible pour cette sélection (Vérifiez les correspondances de libellés dans votre base).</p>
     {% endif %}
+
+    <h3 class="graph-title" style="margin-top: 30px;">Évolution sur plusieurs années</h3>
+    <canvas style="height: 500px;" id="graphique"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // 1. Récupération des données passées par Flask
+        const donnees = {{ evolution|tojson if evolution else '[]'|safe }};
+
+        console.log("DONNEES EVOLUTION RECUES :", donnees);
+
+        if (donnees && donnees.length > 0) {
+            // 2. Plus besoin de chercher ! On utilise directement les vraies clés figées par Python
+            const professions = [...new Set(donnees.map(d => d.profession_sante))].sort();
+            const annees = [...new Set(donnees.map(d => String(d.annee)))].sort();
+
+            // 3. Construction des datasets avec les clés fixes
+            const datasets = professions.map((prof, i) => ({
+                label: prof,
+                data: annees.map(a => {
+                    // Remplacement ici aussi par .profession_sante et .annee
+                    const row = donnees.find(d => d.profession_sante === prof && String(d.annee) === a);
+                    return row ? row.montant_honoraires : null;
+                }),
+                borderColor: "#2E74B5",
+                backgroundColor: "rgba(46, 116, 181, 0.5)",
+                tension: 0.3,
+                spanGaps: true,
+            }));
+
+            // 4. Rendu du graphique Chart.js
+            const ctx = document.getElementById("graphique");
+            if (ctx) {
+                new Chart(ctx, {
+                    type: "bar",
+                    data: { labels: annees, datasets },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: "bottom" }
+                        }
+                    }
+                });
+            }
+        } else {
+            console.warn("Le graphique ne s'affiche pas car la liste 'evolution' est vide.");
+        }
+    </script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
+
+    <p><a href="{{ url_for('accueil.index') }}">Retour à l'accueil</a></p>
 
 {% endblock %}

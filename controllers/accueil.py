@@ -1,17 +1,14 @@
 from flask import Blueprint, render_template, session
 from models.db import Session
-from models.dimensions import Region, ProfessionSante
 
 bp_accueil = Blueprint("accueil", __name__)
 
 @bp_accueil.route("/")
 def index():
-    """Page d'accueil : affiche les régions et professions."""
-    session = Session()
+    """Page d'accueil"""
+    db_session = Session()  # Attention : j'ai renommé en db_session (voir plus bas)
     try:
-        regions = session.query(Region).order_by(Region.libelle).all()
-        professions = (session.query(ProfessionSante).order_by(ProfessionSante.libelle).all())
-        return render_template("accueil.html", regions=regions, professions=professions)
+        # On utilise render_template pour renvoyer le fichier HTML
+        return render_template('accueil.html')
     finally:
-        session.close()
-        
+        db_session.close()
