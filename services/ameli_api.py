@@ -27,23 +27,99 @@ class AmeliAPI:
             {"select": "annee,effectif,densite", "where": where, "limit": 100},
         )
     
+    def _build_honoraires_where(self, niv1, niv2, niv3, departement_code, annee=None, profession=None):
+        """Construit le filtre WHERE de manière robuste."""
+        clauses = []
+        
+        if departement_code:
+            # L'API Ameli exige 2 ou 3 chiffres (ex: "01" pour l'Ain, pas "1")
+            code_propre = str(departement_code).zfill(2)
+            clauses.append(f'departement="{code_propre}"')
+            
+        if niv1:
+            clauses.append(f'type_honoraires_niveau_1="{niv1}"')
+        if niv2:
+            clauses.append(f'type_honoraires_niveau_2="{niv2}"')
+        if niv3:
+            clauses.append(f'type_honoraires_niveau_3="{niv3}"')
+            
+        if annee:
+            clauses.append(f"year(annee)={annee}")
+            
+        if profession:
+            # Gère le piège du singulier/pluriel automatique
+            if not profession.endswith('s') and profession not in ["Autres médecins", "Anesthésistes-réanimateurs"]:
+                clauses.append(f'(profession_sante="{profession}" OR profession_sante="{profession}s")')
+            else:
+                clauses.append(f'profession_sante="{profession}"')
+            
+        return " AND ".join(clauses) if clauses else "1=1"
+
     @avec_cache(duree_vie_seconde=300)
-    def get_honoraires(self, profession, departement_code, annee):
-        # On filtre uniquement sur les dimensions, pas sur les valeurs financières
-        where = (
-            f"profession_sante=\"{profession}\" AND "
-            f"departement=\"{departement_code}\" AND "
-            f"year(annee)={annee}"
+    def get_honoraires(self, niv1, niv2, niv3, departement_code, annee, profession=None):
+        """Récupère les honoraires d'une année spécifique."""
+        where = self._build_honoraires_where(niv1, niv2, niv3, departement_code, annee, profession)
+
+        bruts = self._requete(
+            "honoraires-detailles",
+            {
+                "select": "year(annee), profession_sante, SUM(montant_honoraires) as montant_honoraires",
+                "where": where,
+                "group_by": "profession_sante, year(annee)",
+                "order_by": "profession_sante",
+                "limit": 100,
+            },
         )
-        # On demande à l'API de nous sélectionner les colonnes qui nous intéressent
-        return self._requete(
-            "honoraires", # Remets le nom exact du dataset ici
-            {"select": "annee, hono_sans_depassement_totaux, depassements_totaux", 
-             "where": where, 
-             "limit": 10}
+        
+        liste_noeuds = bruts.get("results", bruts) if isinstance(bruts, dict) else bruts
+        
+        resultats_propres = []
+        for item in liste_noeuds:
+            resultats_propres.append({
+                "annee": annee,
+                "profession_sante": item.get("profession_sante", "Inconnu"),
+                "montant_honoraires": item.get("montant_honoraires")
+            })
+            
+        return resultats_propres
+
+    @avec_cache(duree_vie_seconde=600)
+    def get_evolution_honoraires(self, niv1, niv2, niv3, departement_code, profession=None):
+        """Récupère l'évolution temporelle pour Chart.js (triée par ordre chronologique)."""
+        where = self._build_honoraires_where(
+            niv1=niv1, 
+            niv2=niv2, 
+            niv3=niv3, 
+            departement_code=departement_code, 
+            annee=None,
+            profession=profession
         )
-    
-    
+
+        bruts = self._requete(
+            "honoraires-detailles",
+            {
+                "select": "annee, profession_sante, montant_honoraires",
+                "where": where,
+                "limit": 100,
+            },
+        )
+        
+        liste_noeuds = bruts.get("results", bruts) if isinstance(bruts, dict) else bruts
+        
+        evolution_propre = []
+        if isinstance(liste_noeuds, list):
+            for item in liste_noeuds:
+                annee_brute = item.get("annee")
+                if annee_brute:
+                    evolution_propre.append({
+                        "annee": int(str(annee_brute)[:4]), # Extrait "2022" de "2022-01-01"
+                        "profession_sante": item.get("profession_sante", "Inconnu"),
+                        "montant_honoraires": float(item.get("montant_honoraires") or 0.0)
+                    })
+                    
+        evolution_propre.sort(key=lambda x: x["annee"])
+        return evolution_propre
+            
     @avec_cache(duree_vie_seconde=600)
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""
