@@ -56,11 +56,6 @@
             Exporter PDF
         </a>
     </div>
-    {% else %}
-        <p>Aucune donnée disponible pour cette sélection.</p>
-
-
-
     <h3>Évolution sur plusieurs années</h3>
     <canvas id="graphique"></canvas>
 
@@ -80,6 +75,9 @@
             },
         });
     </script>
+    {% else %}
+        <p>Aucune donnée disponible pour cette sélection.</p>
+
     {% endif %}
     <script>const BASE_URL = "{{ BASE_URL }}";</script>
 <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
