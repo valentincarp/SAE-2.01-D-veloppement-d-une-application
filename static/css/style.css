@@ -185,3 +185,15 @@ select {
         flex-direction: column;
     }
 }
+.carte {
+    background: #f4f9ff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
+}
+
+.carte h2 {
+    color: #0a347c;
+    margin-top: 0;
+}
