@@ -11,6 +11,7 @@ from services.ameli_api import AmeliAPI
 import time
 from controllers.carte import bp_carte
 from controllers.effectifs import bp_effectifs
+from controllers.apropos import bp_a_propos
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -24,6 +25,7 @@ app.register_blueprint(bp_honoraires)
 app.register_blueprint(bp_export)
 app.register_blueprint(bp_comparaison)
 app.register_blueprint(bp_carte)
+app.register_blueprint(bp_a_propos)
 
 api = AmeliAPI()
 t = time.time(); api.get_effectifs("...", "75", 2023); print(time.time() - t)
