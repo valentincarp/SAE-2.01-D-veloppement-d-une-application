@@ -58,7 +58,6 @@ class AmeliAPI:
             "limit": 100},
         )
     
-    
     @avec_cache(duree_vie_seconde=600)
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""

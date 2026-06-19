@@ -1,17 +1,13 @@
-document.getElementById("region").addEventListener("change", async (e) => {
+document.getElementById("region1").addEventListener("change", async (e) => {
     const regionId = e.target.value;
-    const selectDept = document.getElementById("departement");
-
-    // Vider la liste
+    const selectDept = document.getElementById("departement1");
+            
     selectDept.innerHTML = '<option value="">-- Choisir --</option>';
-
     if (!regionId) return;
-
-    // Appel AJAX
+            
     const response = await fetch(`/api/departements/${regionId}`);
     const depts = await response.json();
-
-    // Remplir la liste
+            
     for (const dept of depts) {
         const opt = document.createElement("option");
         opt.value = dept.id;
@@ -20,20 +16,16 @@ document.getElementById("region").addEventListener("change", async (e) => {
     }
 });
 
- document.getElementById("region_2").addEventListener("change", async (e) => {
+document.getElementById("region2").addEventListener("change", async (e) => {
     const regionId = e.target.value;
-    const selectDept = document.getElementById("departement_2");
-
-    // Vider la liste
+    const selectDept = document.getElementById("departement2");
+            
     selectDept.innerHTML = '<option value="">-- Choisir --</option>';
-
     if (!regionId) return;
-
-    // Appel AJAX
-    const response = await fetch(`${BASE_URL}/api/departements/${regionId}`);
+            
+    const response = await fetch(`/api/departements/${regionId}`);
     const depts = await response.json();
-
-    // Remplir la liste
+            
     for (const dept of depts) {
         const opt = document.createElement("option");
         opt.value = dept.id;

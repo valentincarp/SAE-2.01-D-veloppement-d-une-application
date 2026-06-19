@@ -1,28 +1,48 @@
 body {
- font-family: "Segoe UI", sans-serif;
- margin: 0;
- color: #333;
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    color: #333;
 }
 header {
- background: #2E74B5;
- color: white;
- padding: 1rem 2rem;
+    background: #0a347c;
+    color: white;
+    padding: 2rem;
 }
 header nav a {
- color: white;
- margin-right: 1rem;
- text-decoration: none;
+    color: white;
+    margin-right: 1rem;
+    text-decoration: none;
+    position: relative;
 }
+
+/*animation de soulignement*/
+header nav a::before {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    transform: translateX(-50%);
+    transition: width 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+header nav a:hover::before {
+    width: 100%;
+}
+
 main {
- padding: 2rem;
- max-width: 900px;
- margin: auto;
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
 }
 footer {
- text-align: center;
- padding: 1rem;
- color: #777;
- border-top: 1px solid #ddd;
+    text-align: center;
+    padding: 1rem;
+    color: #777;
+    border-top: 1px solid #ddd;
 }
 
 /* affichage des boutons d'export */
@@ -42,4 +62,59 @@ footer {
 
 .export-buttons a:hover {
     background-color: #1a5a9a;
+}
+
+/*style des formulaires*/
+form {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px;
+    background: #f4f9ff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+}
+
+form label {
+    margin-bottom: -10px;
+    font-weight: 600;
+    color: #0a347c;
+}
+
+form select,
+form button {
+    width: 100%;
+}
+
+form button {
+    grid-column: span 2;
+    padding: 12px;
+    background: #0a347c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #d6e4f5;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none; /* retire le style natif */
+    
+    /* flèche personnalisée */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%230a347c' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6' stroke='%230a347c' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
 }

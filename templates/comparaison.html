@@ -105,6 +105,7 @@
                     const donnees2 = {{ evolution2|tojson }};
                     const typeComparaison = "{{ type_comparaison }}";
                     
+                    // Fusionner les labels (années)
                     const allLabels = [...new Set([
                         ...donnees1.map(d => d.annee),
                         ...donnees2.map(d => d.annee)
