@@ -23,6 +23,7 @@
             <label for="type_comparaison">Type de comparaison</label>
             <select name="type_comparaison" id="type_comparaison" required>
                 <option value="effectifs" {% if type_comparaison == 'effectifs' %}selected{% endif %}>Effectifs</option>
+                <option value="honoraires" {% if type_comparaison == 'honoraires' %}selected{% endif %}>Honoraires</option>
                 <option value="prescriptions" {% if type_comparaison == 'prescriptions' %}selected{% endif %}>Prescriptions</option>
             </select>
 
@@ -84,9 +85,33 @@
 
             {% if evolution1 and evolution2 %}
                 <div class="graphique-container">
-                    <h4>{% if type_comparaison == 'effectifs' %}Évolution des effectifs
-                        {% else %}Évolution des prescriptions {% endif %}
+                    <h4>
+                        {% if type_comparaison == 'effectifs' %}Évolution des effectifs
+                        {% elif type_comparaison == 'honoraires' %}Évolution des honoraires
+                        {% else %}Évolution des prescriptions
+                        {% endif %}
                     </h4>
+
+                    <!-- Boutons d'export CSV et PDF, juste au-dessus du graphique -->
+                    <div class="export-buttons">
+                        <a href="{{ url_for('export.export_csv_comparaison',
+                            profession_id=request.args.get('profession_id'),
+                            departement1_id=request.args.get('departement1_id'),
+                            departement2_id=request.args.get('departement2_id'),
+                            annee=annee,
+                            type_comparaison=type_comparaison) }}">
+                            Exporter CSV
+                        </a>
+                        <a href="{{ url_for('export.export_pdf_comparaison',
+                            profession_id=request.args.get('profession_id'),
+                            departement1_id=request.args.get('departement1_id'),
+                            departement2_id=request.args.get('departement2_id'),
+                            annee=annee,
+                            type_comparaison=type_comparaison) }}">
+                            Exporter PDF
+                        </a>
+                    </div>
+
                     <canvas id="graphique-comparaison"></canvas>
                 </div>
 
@@ -107,8 +132,16 @@
                         dataKey1 = "effectif";
                         dataKey2 = "effectif";
                         yAxisLabel = "Effectif";
+                    } else if (typeComparaison === "honoraires") {
+                        // "hono_sans_depassement_totaux" n'existe plus depuis la
+                        // refonte de l'API honoraires : la clé est maintenant
+                        // "montant_honoraires" (voir services/ameli_api.py)
+                        dataKey1 = "montant_honoraires";
+                        dataKey2 = "montant_honoraires";
+                        yAxisLabel = "Montant (€)";
                     } else if (typeComparaison === "prescriptions") {
-                        dataKey = "montant_total_prescription";
+                        dataKey1 = "montant_total_prescription";
+                        dataKey2 = "montant_total_prescription";
                         yAxisLabel = "Montant Prescrit (€)";
                     }
                     
@@ -121,7 +154,7 @@
                                     label: "{{ dept1.code }} - {{ dept1.libelle }}",
                                     data: allLabels.map(year => {
                                         const d = donnees1.find(i => i.annee == year);
-                                        return d ? d[dataKey] : null;
+                                        return d ? d[dataKey1] : null;
                                     }),
                                     borderColor: "#2E74B5",
                                     backgroundColor: "rgba(46, 116, 181, 0.1)",
@@ -133,7 +166,7 @@
                                     label: "{{ dept2.code }} - {{ dept2.libelle }}",
                                     data: allLabels.map(year => {
                                         const d = donnees2.find(i => i.annee == year);
-                                        return d ? d[dataKey] : null;
+                                        return d ? d[dataKey2] : null;
                                     }),
                                     borderColor: "#E74C3C",
                                     backgroundColor: "rgba(231, 76, 60, 0.1)",
@@ -146,18 +179,12 @@
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                }
+                                legend: { display: true, position: 'top' }
                             },
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: yAxisLabel
-                                    }
+                                    title: { display: true, text: yAxisLabel }
                                 }
                             }
                         }
