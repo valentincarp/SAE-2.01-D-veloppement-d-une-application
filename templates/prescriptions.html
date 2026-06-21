@@ -65,7 +65,9 @@
     </tbody>
     </table>
 
-    <!-- Boutons d'export CSV et PDF -->
+    <h3>Évolution sur plusieurs années</h3>
+
+    <!-- Boutons d'export CSV et PDF, juste au-dessus du graphique -->
     <div class="export-buttons">
         <a href="{{ url_for('export.export_csv_prescription',
             profession_id=request.args.get('profession_id'),
@@ -83,7 +85,6 @@
         </a>
     </div>
 
-    <h3>Évolution sur plusieurs années</h3>
     <canvas id="graphique"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

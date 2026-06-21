@@ -76,27 +76,28 @@
             {% if evolution1 and evolution2 %}
                 <div class="graphique-container">
                     <h4>{% if type_comparaison == 'effectifs' %}Évolution des effectifs{% else %}Évolution des honoraires{% endif %}</h4>
-                    <canvas id="graphique-comparaison"></canvas>
-                </div>
 
-                <!-- Boutons d'export CSV et PDF (visibles uniquement si des résultats sont affichés) -->
-                <div class="export-buttons">
-                    <a href="{{ url_for('export.export_csv_comparaison',
-                        profession_id=request.args.get('profession_id'),
-                        departement1_id=request.args.get('departement1_id'),
-                        departement2_id=request.args.get('departement2_id'),
-                        annee=annee,
-                        type_comparaison=type_comparaison) }}">
-                        Exporter CSV
-                    </a>
-                    <a href="{{ url_for('export.export_pdf_comparaison',
-                        profession_id=request.args.get('profession_id'),
-                        departement1_id=request.args.get('departement1_id'),
-                        departement2_id=request.args.get('departement2_id'),
-                        annee=annee,
-                        type_comparaison=type_comparaison) }}">
-                        Exporter PDF
-                    </a>
+                    <!-- Boutons d'export CSV et PDF, juste au-dessus du graphique -->
+                    <div class="export-buttons">
+                        <a href="{{ url_for('export.export_csv_comparaison',
+                            profession_id=request.args.get('profession_id'),
+                            departement1_id=request.args.get('departement1_id'),
+                            departement2_id=request.args.get('departement2_id'),
+                            annee=annee,
+                            type_comparaison=type_comparaison) }}">
+                            Exporter CSV
+                        </a>
+                        <a href="{{ url_for('export.export_pdf_comparaison',
+                            profession_id=request.args.get('profession_id'),
+                            departement1_id=request.args.get('departement1_id'),
+                            departement2_id=request.args.get('departement2_id'),
+                            annee=annee,
+                            type_comparaison=type_comparaison) }}">
+                            Exporter PDF
+                        </a>
+                    </div>
+
+                    <canvas id="graphique-comparaison"></canvas>
                 </div>
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -117,8 +118,11 @@
                         dataKey2 = "effectif";
                         yAxisLabel = "Effectif";
                     } else if (typeComparaison === "honoraires") {
-                        dataKey1 = "hono_sans_depassement_totaux";
-                        dataKey2 = "hono_sans_depassement_totaux";
+                        // "hono_sans_depassement_totaux" n'existe plus depuis la
+                        // refonte de l'API honoraires : la clé est maintenant
+                        // "montant_honoraires" (voir services/ameli_api.py)
+                        dataKey1 = "montant_honoraires";
+                        dataKey2 = "montant_honoraires";
                         yAxisLabel = "Montant (€)";
                     }
                     

@@ -74,26 +74,6 @@
     </h2>
 
     {% if resultats %}
-    <p>Honoraires sans dépassement : {{ resultats[0].hono_sans_depassement_totaux }} €</p>
-    <p>Dépassements : {{ resultats[0].depassements_totaux }} €</p>
-
-    <!-- Boutons d'export CSV et PDF (visibles uniquement si des résultats sont affichés) -->
-    <div class="export-buttons">
-        <a href="{{ url_for('export.export_csv_honoraires',
-            profession_id=request.args.get('profession_id'),
-            departement_id=request.args.get('departement_id'),
-            type_honoraire_id=request.args.get('type_honoraire_id'),
-            annee=annee) }}">
-            Exporter CSV
-        </a>
-        <a href="{{ url_for('export.export_pdf_honoraires',
-            profession_id=request.args.get('profession_id'),
-            departement_id=request.args.get('departement_id'),
-            type_honoraire_id=request.args.get('type_honoraire_id'),
-            annee=annee) }}">
-            Exporter PDF
-        </a>
-    </div>
         <table class="comparaison-table">
             <thead>
                 <tr>
@@ -122,6 +102,36 @@
     {% endif %}
 
     <h3 class="graph-title" style="margin-top: 30px;">Évolution sur plusieurs années</h3>
+
+    <!--
+        Boutons d'export CSV et PDF, juste au-dessus du graphique.
+
+        On transmet type_niv1 / type_niv2 / type_niv3 (et non
+        "type_honoraire_id", qui n'existe pas dans ce formulaire) : ce sont
+        les mêmes filtres que ceux utilisés ci-dessus pour afficher les
+        résultats à l'écran.
+    -->
+    <div class="export-buttons">
+        <a href="{{ url_for('export.export_csv_honoraires',
+            profession_id=profession_id,
+            departement_id=departement_id,
+            type_niv1=type_niv1,
+            type_niv2=type_niv2,
+            type_niv3=type_niv3,
+            annee=annee) }}">
+            Exporter CSV
+        </a>
+        <a href="{{ url_for('export.export_pdf_honoraires',
+            profession_id=profession_id,
+            departement_id=departement_id,
+            type_niv1=type_niv1,
+            type_niv2=type_niv2,
+            type_niv3=type_niv3,
+            annee=annee) }}">
+            Exporter PDF
+        </a>
+    </div>
+
     <canvas style="height: 500px;" id="graphique"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

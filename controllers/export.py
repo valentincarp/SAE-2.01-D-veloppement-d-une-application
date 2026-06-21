@@ -258,37 +258,68 @@ def export_pdf_prescription():
 # ═══════════════════════════════════════════════
 # EXPORT HONORAIRES
 # ═══════════════════════════════════════════════
+#
+# IMPORTANT : api.get_honoraires() a changé de signature suite à la refonte
+# faite par l'équipe. Elle attend maintenant :
+#   get_honoraires(niv1, niv2, niv3, departement_code, annee, profession=None)
+# au lieu de l'ancienne version get_honoraires(profession, departement_code, annee).
+# On doit donc récupérer type_niv1 / type_niv2 / type_niv3 depuis l'URL
+# (exactement comme le fait controllers/honoraires.py), sinon Python associe
+# les arguments aux mauvais paramètres et lève une TypeError.
+#
+# De même, les résultats renvoyés par l'API ont changé de forme :
+#   AVANT : {"annee": ..., "hono_sans_depassement_totaux": ..., "depassements_totaux": ...}
+#   APRES : {"annee": ..., "profession_sante": ..., "montant_honoraires": ...}
+
+def get_donnees_honoraires(profession_id, departement_id, type_niv1, type_niv2, type_niv3, annee):
+    """Récupère prof, dept et le détail des honoraires depuis la base et l'API.
+
+    type_niv1/type_niv2/type_niv3 viennent du formulaire de la page honoraires
+    (ce sont les mêmes filtres que ceux utilisés pour l'affichage à l'écran).
+    """
+    session = Session()
+    try:
+        prof = session.get(ProfessionSante, profession_id)
+        dept = session.get(Departement, departement_id)
+        resultats = api.get_honoraires(
+            type_niv1, type_niv2, type_niv3,
+            dept.code, annee, prof.libelle
+        )
+        # L'API peut renvoyer soit une liste, soit un dict avec une clé "results"
+        if isinstance(resultats, dict) and "results" in resultats:
+            resultats = resultats["results"]
+        return prof, dept, resultats
+    finally:
+        session.close()
 
 @bp_export.route("/export/csv/honoraires")
 def export_csv_honoraires():
     """Exporte les honoraires au format CSV téléchargeable."""
     profession_id = request.args.get("profession_id", type=int)
     departement_id = request.args.get("departement_id", type=int)
-    type_honoraire_id = request.args.get("type_honoraire_id", type=int)
     annee = request.args.get("annee", type=int)
+    # Ces 3 filtres remplacent l'ancien (et inexistant) "type_honoraire_id" :
+    # ils correspondent aux listes déroulantes en cascade de la page honoraires.
+    type_niv1 = request.args.get("type_niv1")
+    type_niv2 = request.args.get("type_niv2")
+    type_niv3 = request.args.get("type_niv3")
 
-    # Récupération des données depuis la base et l'API
-    session = Session()
-    try:
-        prof = session.get(ProfessionSante, profession_id)
-        dept = session.get(Departement, departement_id)
-        resultats = api.get_honoraires(prof.libelle, dept.code, annee)
-    finally:
-        session.close()
+    prof, dept, resultats = get_donnees_honoraires(
+        profession_id, departement_id, type_niv1, type_niv2, type_niv3, annee
+    )
 
     # Création du CSV en mémoire
     output = io.StringIO()
     writer = csv.writer(output, delimiter=";")
 
-    # En-tête du CSV
-    writer.writerow(["Annee", "Honoraires sans depassement", "Depassements totaux"])
+    # En-tête du CSV (nouvelles colonnes : profession + montant, comme le tableau web)
+    writer.writerow(["Annee", "Profession de sante", "Montant des honoraires"])
 
-    # Une ligne par résultat — r est toujours un dict car l'API retourne des dicts
     for r in resultats:
         writer.writerow([
             r.get("annee", annee),
-            r.get("hono_sans_depassement_totaux", ""),
-            r.get("depassements_totaux", "")
+            r.get("profession_sante", ""),
+            r.get("montant_honoraires", "")
         ])
 
     # utf-8-sig pour que Excel reconnaisse les accents
@@ -306,17 +337,14 @@ def export_pdf_honoraires():
     """Exporte les honoraires au format PDF téléchargeable."""
     profession_id = request.args.get("profession_id", type=int)
     departement_id = request.args.get("departement_id", type=int)
-    type_honoraire_id = request.args.get("type_honoraire_id", type=int)
     annee = request.args.get("annee", type=int)
+    type_niv1 = request.args.get("type_niv1")
+    type_niv2 = request.args.get("type_niv2")
+    type_niv3 = request.args.get("type_niv3")
 
-    # Récupération des données depuis la base et l'API
-    session = Session()
-    try:
-        prof = session.get(ProfessionSante, profession_id)
-        dept = session.get(Departement, departement_id)
-        resultats = api.get_honoraires(prof.libelle, dept.code, annee)
-    finally:
-        session.close()
+    prof, dept, resultats = get_donnees_honoraires(
+        profession_id, departement_id, type_niv1, type_niv2, type_niv3, annee
+    )
 
     # Construction du PDF
     buffer = io.BytesIO()
@@ -328,14 +356,15 @@ def export_pdf_honoraires():
     titre = f"Honoraires – {prof.libelle} – {dept.code} {dept.libelle} – {annee}"
     elements.append(Paragraph(titre, styles["Title"]))
 
-    # Tableau des données
-    data = [["Annee", "Honoraires sans depassement", "Depassements totaux"]]
+    # Tableau des données (mêmes colonnes que le CSV)
+    data = [["Annee", "Profession de sante", "Montant des honoraires"]]
     for r in resultats:
-        # r est un dict retourné par l'API
+        montant = r.get("montant_honoraires")
+        montant_affiche = f"{montant:,.0f} €".replace(",", " ") if montant is not None else "N/A"
         data.append([
             r.get("annee", annee),
-            f"{r.get('hono_sans_depassement_totaux', '')} €",
-            f"{r.get('depassements_totaux', '')} €"
+            r.get("profession_sante", ""),
+            montant_affiche
         ])
 
     table = Table(data)
@@ -382,8 +411,13 @@ def export_csv_comparaison():
             evolution1 = api.get_evolution_effectifs(prof.libelle, dept1.code)
             evolution2 = api.get_evolution_effectifs(prof.libelle, dept2.code)
         else:
-            evolution1 = api.get_evolution_honoraires(prof.libelle, dept1.code)
-            evolution2 = api.get_evolution_honoraires(prof.libelle, dept2.code)
+            # NOTE : get_evolution_honoraires attend maintenant (niv1, niv2, niv3,
+            # departement_code, profession=None). La page de comparaison ne propose
+            # pas de filtre niv1/niv2/niv3 (juste "effectifs" vs "honoraires"), donc
+            # on utilise "Actes" comme niveau 1 par défaut pour obtenir une vue
+            # globale des honoraires, cohérente avec le comportement précédent.
+            evolution1 = api.get_evolution_honoraires("Actes", None, None, dept1.code, prof.libelle)
+            evolution2 = api.get_evolution_honoraires("Actes", None, None, dept2.code, prof.libelle)
     finally:
         session.close()
 
@@ -397,9 +431,10 @@ def export_csv_comparaison():
         dict1 = {r.get("annee"): r.get("effectif") for r in evolution1}
         dict2 = {r.get("annee"): r.get("effectif") for r in evolution2}
     else:
+        # Nouvelle clé : "montant_honoraires" (remplace "hono_sans_depassement_totaux")
         writer.writerow(["Annee", f"Honoraires {dept1.code} (€)", f"Honoraires {dept2.code} (€)"])
-        dict1 = {r.get("annee"): r.get("hono_sans_depassement_totaux") for r in evolution1}
-        dict2 = {r.get("annee"): r.get("hono_sans_depassement_totaux") for r in evolution2}
+        dict1 = {r.get("annee"): r.get("montant_honoraires") for r in evolution1}
+        dict2 = {r.get("annee"): r.get("montant_honoraires") for r in evolution2}
 
     # Toutes les années disponibles dans les deux départements
     toutes_annees = sorted(set(list(dict1.keys()) + list(dict2.keys())))
@@ -439,9 +474,11 @@ def export_pdf_comparaison():
             cle = "effectif"
             ylabel = "Effectif"
         else:
-            evolution1 = api.get_evolution_honoraires(prof.libelle, dept1.code)
-            evolution2 = api.get_evolution_honoraires(prof.libelle, dept2.code)
-            cle = "hono_sans_depassement_totaux"
+            # Même remarque que pour le CSV : niv1="Actes" par défaut, faute de
+            # filtre dédié sur la page de comparaison.
+            evolution1 = api.get_evolution_honoraires("Actes", None, None, dept1.code, prof.libelle)
+            evolution2 = api.get_evolution_honoraires("Actes", None, None, dept2.code, prof.libelle)
+            cle = "montant_honoraires"
             ylabel = "Montant (€)"
     finally:
         session.close()
@@ -463,9 +500,8 @@ def export_pdf_comparaison():
 
     # Formater l'axe Y pour éviter les grands nombres illisibles
     # ex: 1500000 → 1.5M €, 500000 → 500K €
-    # Formater l'axe Y pour éviter les grands nombres illisibles
     if type_comparaison == "honoraires":
-        # Conversion en float car l'API peut retourner des strings
+        # Conversion en float car l'API peut retourner des strings ou des None
         valeurs1 = [float(v) if v is not None else 0 for v in valeurs1]
         valeurs2 = [float(v) if v is not None else 0 for v in valeurs2]
         # Redessiner les courbes avec les valeurs converties
@@ -479,7 +515,7 @@ def export_pdf_comparaison():
         ax.grid(True, linestyle="--", alpha=0.5)
         ax.yaxis.set_major_formatter(
             plt.FuncFormatter(lambda x, _: f"{x/1_000_000:.1f}M €" if x >= 1_000_000 else f"{x/1_000:.0f}K €")
-    )
+        )
 
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
@@ -510,8 +546,8 @@ def export_pdf_comparaison():
         dict2 = {r.get("annee"): r.get("effectif") for r in evolution2}
         data = [["Annee", f"Effectif {dept1.code}", f"Effectif {dept2.code}"]]
     else:
-        dict1 = {r.get("annee"): r.get("hono_sans_depassement_totaux") for r in evolution1}
-        dict2 = {r.get("annee"): r.get("hono_sans_depassement_totaux") for r in evolution2}
+        dict1 = {r.get("annee"): r.get("montant_honoraires") for r in evolution1}
+        dict2 = {r.get("annee"): r.get("montant_honoraires") for r in evolution2}
         data = [["Annee", f"Honoraires {dept1.code} (€)", f"Honoraires {dept2.code} (€)"]]
 
     toutes_annees = sorted(set(list(dict1.keys()) + list(dict2.keys())))
