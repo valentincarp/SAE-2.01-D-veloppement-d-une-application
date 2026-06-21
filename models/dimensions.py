@@ -1,6 +1,9 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
 Base = declarative_base()
 # ── Dimensions géographiques ────────────────────────────────────────────
 class Region(Base):
@@ -70,3 +73,20 @@ class TypePrescription(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     libelle = Column(String(200), nullable=False, unique=True)
     def __repr__(self): return self.libelle
+
+class Utilisateur(Base, UserMixin):
+    __tablename__ = "utilisateur"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    identifiant = Column(String(50), nullable=False, unique=True)
+    password_hash = Column(String(256), nullable=False)
+    est_admin = Column(Integer, default=1) # 1 pour admin, 0 sinon
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self): 
+        return f"<Utilisateur {self.identifiant}>"

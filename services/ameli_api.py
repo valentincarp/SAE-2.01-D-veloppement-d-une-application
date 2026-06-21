@@ -83,6 +83,13 @@ class AmeliAPI:
             
         return resultats_propres
 
+    # NOTE : il existait ici deux définitions de get_evolution_honoraires
+    # (un reste de conflit de merge non résolu jusqu'au bout). En Python,
+    # seule la dernière définition d'une méthode portant le même nom est
+    # gardée, ce qui faisait planter tous les appels avec 5 arguments en
+    # utilisant silencieusement l'ancienne version à 2 arguments. On ne garde
+    # que la version moderne, cohérente avec get_honoraires ci-dessus
+    # (même dataset "honoraires-detailles", même filtre via _build_honoraires_where).
     @avec_cache(duree_vie_seconde=600)
     def get_evolution_honoraires(self, niv1, niv2, niv3, departement_code, profession=None):
         """Récupère l'évolution temporelle pour Chart.js (triée par ordre chronologique)."""
@@ -94,22 +101,6 @@ class AmeliAPI:
             annee=None,
             profession=profession
         )
-    
-    @avec_cache(duree_vie_seconde=600)
-    def get_evolution_honoraires(self, profession, departement_code):
-        """Honoraires sur toutes les années disponibles (pour un graphique d'évolution)."""
-        where = (
-            f"profession_sante=\"{profession}\" AND "
-            f"departement=\"{departement_code}\""
-        )
-        return self._requete(
-            "honoraires",
-            {"select": "annee, hono_sans_depassement_totaux, depassements_totaux",
-            "where": where,
-            "order_by": "annee",
-            "limit": 100},
-        )
-    
 
         bruts = self._requete(
             "honoraires-detailles",
@@ -135,7 +126,7 @@ class AmeliAPI:
                     
         evolution_propre.sort(key=lambda x: x["annee"])
         return evolution_propre
-            
+
     @avec_cache(duree_vie_seconde=600)
     def get_evolution_effectifs(self, profession, departement_code):
         """Effectifs sur toutes les années disponibles (pour un graphique)."""

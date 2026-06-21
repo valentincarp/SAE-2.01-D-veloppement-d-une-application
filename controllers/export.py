@@ -275,14 +275,28 @@ def get_donnees_honoraires(profession_id, departement_id, type_niv1, type_niv2, 
     """Récupère prof, dept et le détail des honoraires depuis la base et l'API.
 
     type_niv1/type_niv2/type_niv3 viennent du formulaire de la page honoraires
-    (ce sont les mêmes filtres que ceux utilisés pour l'affichage à l'écran).
+    (ce sont les libellés affichés à l'écran : "Honoraires", "Sans dépassement"/
+    "Dépassements", "Moyens"/"Totaux"). Ces libellés ne correspondent pas
+    directement aux valeurs attendues par l'API ameli.fr (dataset
+    "honoraires-detailles") : il faut leur appliquer la même transformation
+    que controllers/honoraires.py, sinon l'API ne reconnaît rien et renvoie
+    une liste vide (c'était la cause du CSV/PDF honoraires toujours vides).
     """
+    # Même transformation que dans controllers/honoraires.py, pour rester
+    # cohérent avec ce que voit l'utilisateur à l'écran.
+    if type_niv2 == "Dépassements":
+        ameli_niv1 = "Dépassements"
+        ameli_niv2 = None
+    else:
+        ameli_niv1 = "Actes"
+        ameli_niv2 = "Actes cliniques" if type_niv3 == "Moyens" else None
+
     session = Session()
     try:
         prof = session.get(ProfessionSante, profession_id)
         dept = session.get(Departement, departement_id)
         resultats = api.get_honoraires(
-            type_niv1, type_niv2, type_niv3,
+            ameli_niv1, ameli_niv2, None,
             dept.code, annee, prof.libelle
         )
         # L'API peut renvoyer soit une liste, soit un dict avec une clé "results"

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 from models.db import Session
-from models.dimensions import ProfessionSante, Departement, Region
+from models.dimensions import ProfessionSante, Departement, Region, TypePrescription
 from services.ameli_api import AmeliAPI
 
 bp_comparaison = Blueprint("comparaison", __name__)
@@ -14,11 +14,13 @@ def comparaison():
     departement2_id = request.args.get("departement2_id", type=int)
     annee = request.args.get("annee", type=int)
     type_comparaison = request.args.get("type_comparaison", default="effectifs")
+    poste_prescription = request.args.get("poste_prescription", type=int)
 
     session = Session()
     try:
         regions = session.query(Region).order_by(Region.libelle).all()
         professions = session.query(ProfessionSante).order_by(ProfessionSante.libelle).all()
+        types_prescriptions = session.query(TypePrescription).order_by(TypePrescription.libelle).all()
         
         prof = None
         dept1 = None
@@ -38,13 +40,17 @@ def comparaison():
                 evolution1 = api.get_evolution_effectifs(prof.libelle, dept1.code)
                 evolution2 = api.get_evolution_effectifs(prof.libelle, dept2.code)
             elif type_comparaison == "honoraires":
-                evolution1 = api.get_evolution_honoraires(prof.libelle, dept1.code)
-                evolution2 = api.get_evolution_honoraires(prof.libelle, dept2.code)
+                evolution1 = api.get_evolution_honoraires("Actes", None, None, dept1.code, prof.libelle)
+                evolution2 = api.get_evolution_honoraires("Actes", None, None, dept2.code, prof.libelle)
+            elif type_comparaison == "prescriptions" and poste_prescription:
+                evolution1 = api.get_evolution_prescriptions(prof.libelle, dept1.code, poste_prescription)
+                evolution2 = api.get_evolution_prescriptions(prof.libelle, dept2.code, poste_prescription)
 
         return render_template("comparaison.html",
-            regions=regions, professions=professions,
+            regions=regions, professions=professions, types_prescriptions=types_prescriptions,
             prof=prof, dept1=dept1, dept2=dept2, annee=annee,
             evolution1=evolution1, evolution2=evolution2,
-            type_comparaison=type_comparaison)
+            type_comparaison=type_comparaison,
+            poste_prescription=poste_prescription)
     finally:
         session.close()

@@ -24,6 +24,7 @@
             <select name="type_comparaison" id="type_comparaison" required>
                 <option value="effectifs" {% if type_comparaison == 'effectifs' %}selected{% endif %}>Effectifs</option>
                 <option value="honoraires" {% if type_comparaison == 'honoraires' %}selected{% endif %}>Honoraires</option>
+                <option value="prescriptions" {% if type_comparaison == 'prescriptions' %}selected{% endif %}>Prescriptions</option>
             </select>
 
             <div class="dep1">
@@ -63,7 +64,16 @@
                     {% endif %}
                 </select>
             </div>
-
+            
+            <div class="prescription">
+                <label for="poste">Type de prescription</label>
+                <select name="poste_prescription" id="poste">
+                    <option value="">-- Choisir --</option>
+                    {% for t in types_prescriptions %}
+                        <option value="{{ t.id }}" {% if poste_prescription == t.id %}selected{% endif %}>{{ t.libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <button type="submit">Comparer</button>
         </form>
     </div>
@@ -75,7 +85,12 @@
 
             {% if evolution1 and evolution2 %}
                 <div class="graphique-container">
-                    <h4>{% if type_comparaison == 'effectifs' %}Évolution des effectifs{% else %}Évolution des honoraires{% endif %}</h4>
+                    <h4>
+                        {% if type_comparaison == 'effectifs' %}Évolution des effectifs
+                        {% elif type_comparaison == 'honoraires' %}Évolution des honoraires
+                        {% else %}Évolution des prescriptions
+                        {% endif %}
+                    </h4>
 
                     <!-- Boutons d'export CSV et PDF, juste au-dessus du graphique -->
                     <div class="export-buttons">
@@ -102,15 +117,15 @@
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
-                    const donnees1 = {{ evolution1|tojson }};
-                    const donnees2 = {{ evolution2|tojson }};
+                    const donnees1 = {{ evolution1|tojson if evolution1 else '[]'|safe }};
+                    const donnees2 = {{ evolution2|tojson if evolution2 else '[]'|safe }};
                     const typeComparaison = "{{ type_comparaison }}";
                     
                     // Fusionner les labels (années)
                     const allLabels = [...new Set([
                         ...donnees1.map(d => d.annee),
                         ...donnees2.map(d => d.annee)
-                    ])].sort();
+                    ])].map(Number).sort();
                     
                     let dataKey1, dataKey2, yAxisLabel;
                     if (typeComparaison === "effectifs") {
@@ -124,6 +139,10 @@
                         dataKey1 = "montant_honoraires";
                         dataKey2 = "montant_honoraires";
                         yAxisLabel = "Montant (€)";
+                    } else if (typeComparaison === "prescriptions") {
+                        dataKey1 = "montant_total_prescription";
+                        dataKey2 = "montant_total_prescription";
+                        yAxisLabel = "Montant Prescrit (€)";
                     }
                     
                     new Chart(document.getElementById("graphique-comparaison"), {
@@ -134,7 +153,7 @@
                                 {
                                     label: "{{ dept1.code }} - {{ dept1.libelle }}",
                                     data: allLabels.map(year => {
-                                        const d = donnees1.find(d => d.annee == year);
+                                        const d = donnees1.find(i => i.annee == year);
                                         return d ? d[dataKey1] : null;
                                     }),
                                     borderColor: "#2E74B5",
@@ -146,7 +165,7 @@
                                 {
                                     label: "{{ dept2.code }} - {{ dept2.libelle }}",
                                     data: allLabels.map(year => {
-                                        const d = donnees2.find(d => d.annee == year);
+                                        const d = donnees2.find(i => i.annee == year);
                                         return d ? d[dataKey2] : null;
                                     }),
                                     borderColor: "#E74C3C",
