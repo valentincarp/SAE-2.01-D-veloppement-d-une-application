@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titre %}Panel Admin{% endblock %}
+
+{% block contenu %}
+<section class="hero">
+    <h1>Dashboard d'Administration</h1>
+    <p>Bienvenue {{ current_user.identifiant }} | <a href="{{ url_for('auth.logout') }}">Se déconnecter</a></p>
+</section>
+
+<section>
+    <div>
+        <h3>Données Géographiques</h3>
+        <p><strong>Régions en BDD : </strong>{{ nb_regions }}</p>
+        <p><strong>Départements en BDD : </strong>{{ nb_departements }}</p>
+    </div>
+
+    <div>
+        <h3>Données Métier</h3>
+        <p><strong>Professions médicales : </strong>{{ nb_professions }}</p>
+    </div>
+
+    <div>
+        <h3>Autres données</h3>
+        <p><strong>Nombre de types de prescriptions : </strong>{{ nb_prescriptions }}</p>
+    </div>
+</section>
+{% endblock %}
