@@ -89,14 +89,19 @@ form button {
     width: 100%;
 }
 
-form button {
+form button, .btn-carte {
     grid-column: span 2;
+    font-size: 1.17rem;
     padding: 12px;
     background: #0a347c;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+}
+
+.btn-carte {
+    margin-top: 1rem;
 }
 
 select {
@@ -117,6 +122,40 @@ select {
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 40px;
+}
+
+.dep1 {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Aligne l'espacement interne */
+}
+
+.dep2 {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.prescription {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.annee-comparaison {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center; /* Centre le slider verticalement si besoin */
+}
+
+.annee-comparaison input[type="range"] {
+    width: 100%;
+    margin-top: 10px;
 }
 
 /* ===== PAGE ACCUEIL ===== */
@@ -226,4 +265,8 @@ select {
     background-color: #d1ecf1;
     color: #0c5460;
     border-color: #bee5eb;
+}
+
+.carte-admin {
+    margin-top: 3rem;
 }
