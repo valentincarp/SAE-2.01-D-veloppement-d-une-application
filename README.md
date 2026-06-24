@@ -4,15 +4,15 @@ Application web Flask permettant de consulter, visualiser et comparer les donné
 
 ## Équipe
 
-- Sami AZZOUG | [[ ] Page Honoraires (sélection du type d'honoraire)]
+- Sami AZZOUG | Page Honoraires (sélection du type d'honoraire)
 
-- Valentin CARPINTEIRO-LERICQ | [ ] Page d'accueil avec formulaire de sélection (profession, région, département, année) ; [ ] Page "A propos" ; Page "Effectifs"
+- Valentin CARPINTEIRO-LERICQ | Page d'accueil avec formulaire de sélection (profession, région, département, année) ; Page "A propos" ; Page "Effectifs"
 
-- Assane DIEBATE | Export des données au format CSV et PDF ; [ ] Carte interactive des densités par département (Leaflet) ; README
+- Assane DIEBATE | Export des données au format CSV et PDF ; Carte interactive des densités par département (Leaflet) ; README
 
-- Nohlan MOMPEROUSSE | [[ ] Page "Prescriptions"]
+- Nohlan MOMPEROUSSE | Page "Prescriptions"
 
-- Arthur SIVAULT--LE MORELLEC | [ ] Mise en cache des appels API ; [ ] Authentification administrateur ; [ ] Graphique d'évolution (Chart.js) 
+- Arthur SIVAULT--LE MORELLEC | Mise en cache des appels API ; Authentification administrateur ; Graphique d'évolution (Chart.js) 
 
 ## Fonctionnalités implémentées
 
@@ -46,33 +46,28 @@ Application web Flask permettant de consulter, visualiser et comparer les donné
 
 Le projet respecte l'architecture MVC :
 
+```
 SAE201-app/
-
 ├── app.py
-
 ├── config.py
-
 ├── models/          # Modèle : ORM + accès base
-
 ├── services/         # Services métier : AmeliAPI, cache
-
 ├── controllers/      # Contrôleurs : routes Flask
-
 ├── templates/        # Vues : HTML Jinja2
-
 └── static/           # CSS, JS, GeoJSON
+```
 
 ## Installation
 
 ### Prérequis
 - Python 3.10 ou supérieur
-- Accès à la base MySQL SAE2.04
+- Accès à la base MySQL SAE2.04 (connexion via .env)
 
 ### Étapes
 
 1. Cloner le dépôt :
 ```bash
-git clone [url du dépôt]
+git clone https://github.com/valentincarp/SAE-2.01-D-veloppement-d-une-application.git
 cd SAE201-app
 ```
 
@@ -87,19 +82,15 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Créer un fichier `.env` à la racine (voir `.env.example`) avec vos identifiants MySQL :
-
+4. Créer un fichier `.env` à la racine :
+```
 DB_USER=sae204_XX_user
-
 DB_PASSWORD=********
-
 DB_HOST=mysql-sae204.alwaysdata.net
-
 DB_NAME=sae204_XX_bd
-
 SECRET_KEY=quelque-chose
-
 APP_BASE_URL=
+```
 
 ## Lancement
 
