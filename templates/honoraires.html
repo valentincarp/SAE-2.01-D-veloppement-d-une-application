@@ -111,26 +111,28 @@
         les mêmes filtres que ceux utilisés ci-dessus pour afficher les
         résultats à l'écran.
     -->
-    <div class="export-buttons">
-        <a href="{{ url_for('export.export_csv_honoraires',
-            profession_id=profession_id,
-            departement_id=departement_id,
-            type_niv1=type_niv1,
-            type_niv2=type_niv2,
-            type_niv3=type_niv3,
-            annee=annee) }}">
-            Exporter CSV
-        </a>
-        <a href="{{ url_for('export.export_pdf_honoraires',
-            profession_id=profession_id,
-            departement_id=departement_id,
-            type_niv1=type_niv1,
-            type_niv2=type_niv2,
-            type_niv3=type_niv3,
-            annee=annee) }}">
-            Exporter PDF
-        </a>
-    </div>
+    {% if current_user.is_authenticated %}
+        <div class="export-buttons">
+            <a href="{{ url_for('export.export_csv_honoraires',
+                profession_id=profession_id,
+                departement_id=departement_id,
+                type_niv1=type_niv1,
+                type_niv2=type_niv2,
+                type_niv3=type_niv3,
+                annee=annee) }}">
+                Exporter CSV
+            </a>
+            <a href="{{ url_for('export.export_pdf_honoraires',
+                profession_id=profession_id,
+                departement_id=departement_id,
+                type_niv1=type_niv1,
+                type_niv2=type_niv2,
+                type_niv3=type_niv3,
+                annee=annee) }}">
+                Exporter PDF
+            </a>
+        </div>
+    {% endif %}
 
     <canvas style="height: 500px;" id="graphique"></canvas>
 
