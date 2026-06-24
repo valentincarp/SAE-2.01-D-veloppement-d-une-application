@@ -27,6 +27,8 @@ def comparaison():
         dept2 = None
         evolution1 = []
         evolution2 = []
+        d1 = None
+        d2 = None
         
         if profession_id and departement1_id and departement2_id and annee:
             prof = session.get(ProfessionSante, profession_id)
@@ -39,16 +41,18 @@ def comparaison():
             if type_comparaison == "effectifs":
                 evolution1 = api.get_evolution_effectifs(prof.libelle, dept1.code)
                 evolution2 = api.get_evolution_effectifs(prof.libelle, dept2.code)
-            elif type_comparaison == "honoraires":
-                evolution1 = api.get_evolution_honoraires("Actes", None, None, dept1.code, prof.libelle)
-                evolution2 = api.get_evolution_honoraires("Actes", None, None, dept2.code, prof.libelle)
+                d1 = api.get_effectifs(prof.libelle, dept1.code, annee)
+                d2 = api.get_effectifs(prof.libelle, dept2.code, annee)
             elif type_comparaison == "prescriptions" and poste_prescription:
                 evolution1 = api.get_evolution_prescriptions(prof.libelle, dept1.code, poste_prescription)
                 evolution2 = api.get_evolution_prescriptions(prof.libelle, dept2.code, poste_prescription)
+                d1 = api.get_prescriptions(prof.libelle, dept1.code, annee, poste_prescription)
+                d2 = api.get_prescriptions(prof.libelle, dept2.code, annee, poste_prescription)
 
         return render_template("comparaison.html",
             regions=regions, professions=professions, types_prescriptions=types_prescriptions,
             prof=prof, dept1=dept1, dept2=dept2, annee=annee,
+            d1=d1, d2=d2,
             evolution1=evolution1, evolution2=evolution2,
             type_comparaison=type_comparaison,
             poste_prescription=poste_prescription)

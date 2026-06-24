@@ -16,7 +16,6 @@
             <label for="type_comparaison">Type de comparaison</label>
             <select name="type_comparaison" id="type_comparaison" required>
                 <option value="effectifs" {% if type_comparaison == 'effectifs' %}selected{% endif %}>Effectifs</option>
-                <option value="honoraires" {% if type_comparaison == 'honoraires' %}selected{% endif %}>Honoraires</option>
                 <option value="prescriptions" {% if type_comparaison == 'prescriptions' %}selected{% endif %}>Prescriptions</option>
             </select>
 
@@ -88,17 +87,16 @@
 
     {% if prof and dept1 and dept2 %}
         <div class="resultats-comparaison">
-            <h3>{{ prof.libelle }} - Année {{ annee }}</h3>
+            <h2>{{ prof.libelle }} - Année {{ annee }}</h2>
             <p>Comparaison entre <strong>{{ dept1.code }} - {{ dept1.libelle }}</strong> et <strong>{{ dept2.code }} - {{ dept2.libelle }}</strong></p>
 
             {% if evolution1 and evolution2 %}
                 <div class="graphique-container">
-                    <h4>
+                    <h3>
                         {% if type_comparaison == 'effectifs' %}Évolution des effectifs
-                        {% elif type_comparaison == 'honoraires' %}Évolution des honoraires
                         {% else %}Évolution des prescriptions
                         {% endif %}
-                    </h4>
+                    </h3>
 
                     {% if current_user.is_authenticated %}
                         <!-- Boutons d'export CSV et PDF, juste au-dessus du graphique -->
@@ -122,6 +120,70 @@
                         </div>
                     {% endif %}
 
+                    {% if type_comparaison == 'effectifs' %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Année</th>
+                                <th>Département</th>
+                                <th>Effectif</th>
+                                <th>Densité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ annee }}</td>
+                                <td>{{ dept1.code }} - {{ dept1.libelle }}</td>
+                                <td>{{ d1[0].effectif }}</td>
+                                <td>{{ d1[0].densite }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ annee }}</td>
+                                <td>{{ dept2.code }} - {{ dept2.libelle }}</td>
+                                <td>{{ d2[0].effectif }}</td>
+                                <td>{{ d2[0].densite }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% else %} 
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Année</th>
+                                <th>Département</th>
+                                <th>Montant total</th>
+                                <th>Montant moyen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ annee }}</td>
+                                <td>{{ dept1.code }} - {{ dept1.libelle }}</td>
+                                <td>
+                                    {% set mt1 = d1[0].montant_total_prescription %}
+                                    {{ mt1 ~ ' €' }}
+                                </td>
+                                <td>
+                                    {% set mm1 = d1[0].montant_moyen_prescription  %}
+                                    {{ mm1 ~ ' €' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>{{ annee }}</td>
+                                <td>{{ dept2.code }} - {{ dept2.libelle }}</td>
+                                <td>
+                                    {% set mt2 = d2[0].montant_total_prescription %}
+                                    {{ mt2 ~ ' €' }}
+                                </td>
+                                <td>
+                                    {% set mm2 = d2[0].montant_moyen_prescription %}
+                                    {{ mm2 ~ ' €' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {% endif %}
+
                     <canvas id="graphique-comparaison"></canvas>
                 </div>
 
@@ -142,13 +204,6 @@
                         dataKey1 = "effectif";
                         dataKey2 = "effectif";
                         yAxisLabel = "Effectif";
-                    } else if (typeComparaison === "honoraires") {
-                        // "hono_sans_depassement_totaux" n'existe plus depuis la
-                        // refonte de l'API honoraires : la clé est maintenant
-                        // "montant_honoraires" (voir services/ameli_api.py)
-                        dataKey1 = "montant_honoraires";
-                        dataKey2 = "montant_honoraires";
-                        yAxisLabel = "Montant (€)";
                     } else if (typeComparaison === "prescriptions") {
                         dataKey1 = "montant_total_prescription";
                         dataKey2 = "montant_total_prescription";

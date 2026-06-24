@@ -170,3 +170,25 @@ class AmeliAPI:
         {"select": "annee, poste_prescription, libelle_poste_prescription, montant_total_prescription, montant_moyen_prescription", "where": where,
             "order_by": "annee", "limit": 100},
         )
+    
+    @avec_cache(duree_vie_seconde=600)
+    def get_part_hommes_femmes(self):
+        """Part des femmes et des hommes pour chaque profession de santé, sur l'année la plus récente disponible.
+        """
+        reponse = self._requete(
+            "demographie-ages-moyens-part-des-femmes-part-des-plus-de-60-ans",
+            {
+                "select": "profession_sante, avg(part_femmes) as moyenne_femmes, avg(part_hommes) as moyenne_hommes",
+                "where" : "year(annee)=2024",
+                "group_by": "profession_sante",
+                "order_by": "moyenne_femmes desc",
+                "limit": 100,
+            },
+        )
+ 
+        if "results" in reponse:
+            for ligne in reponse["results"]:
+                ligne["moyenne_femmes"] = round(ligne["moyenne_femmes"], 3)
+                ligne["moyenne_hommes"] = round(ligne["moyenne_hommes"], 3)
+ 
+        return reponse

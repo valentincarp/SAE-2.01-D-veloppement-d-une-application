@@ -2,7 +2,7 @@
 {% block titre %}Panel Admin{% endblock %}
 
 {% block contenu %}
-    <section class="hero">
+    <section class="accueil-dashboard">
         <h1>Dashboard d'Administration</h1>
         <p>Bienvenue {{ current_user.identifiant }} | <a href="{{ url_for('auth.logout') }}">Se déconnecter</a></p>
     </section>
@@ -25,8 +25,74 @@
         </div>
     </section>
 
+    <section>
+        <div class="carte carte-admin" style="width: 100%; padding: 25px; text-align: center;">
+            <h3>Répartition Globale Hommes / Femmes (Toutes professions)</h3>
+            <p>Moyenne nationale calculée sur l'ensemble du corps médical</p>
+            <div>
+                <canvas id="graphique-global"></canvas>
+            </div>
+        </div>
+    </section>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>const BASE_URL = "{{ BASE_URL }}";</script>
     <script src="{{ url_for('static', filename='js/cascade.js') }}"></script>
 
+    <script>
+        // 1. Récupération de la liste brute renvoyée par ton API
+        const apiReponse = {{ part_hommes_femmes|tojson|safe }};
+        
+        let pourcentageFemmes;
+        let pourcentageHommes;
+
+        if (apiReponse && apiReponse.length > 0) {
+            let totalFemmes = 0;
+            let totalHommes = 0;
+            let compteur = 0;
+
+            // 2. Boucle sur chaque profession pour accumuler les parts
+            apiReponse.forEach(ligne => {
+                totalFemmes += parseFloat(ligne.moyenne_femmes || 0);
+                totalHommes += parseFloat(ligne.moyenne_hommes || 0);
+                compteur++;
+            });
+
+            // 3. Calcul de la moyenne globale
+            if (compteur > 0) {
+                const moyenneFemmes = totalFemmes / compteur;
+                const moyenneHommes = totalHommes / compteur;
+
+                // Multiplier par 100 si l'API renvoie des décimaux (ex: 0.43 -> 43%)
+                const multiplicateur = moyenneFemmes <= 1 ? 100 : 1;
+
+                pourcentageFemmes = (moyenneFemmes * multiplicateur).toFixed(1);
+                pourcentageHommes = (moyenneHommes * multiplicateur).toFixed(1);
+            }
+        }
+
+        // 4. Affichage du Doughnut Chart avec la moyenne globale
+        const ctx = document.getElementById('graphique-global').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Femmes (%)', 'Hommes (%)'],
+                datasets: [{
+                    data: [pourcentageFemmes, pourcentageHommes],
+                    backgroundColor: ['#E84188', '#2E74B5'],
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    </script>
 {% endblock %}

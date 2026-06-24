@@ -54,23 +54,19 @@
             <thead>
                 <tr>
                     <th>Année</th>
-                    <th>Type de prescription</th>
-                    <th>Libellé du poste</th>
                     <th>Montant total</th>
                     <th>Montant moyen</th>
                 </tr>
             </thead>
-        <tbody>
-            {% for r in resultats %}
-            <tr>
-                <td>{{ r.annee }}</td>
-                <td>{{ r.poste_prescription }}</td>
-                <td>{{ r.libelle_poste_prescription }}</td>
-                <td>{{ r.montant_total_prescription }} €</td>
-                <td>{{ r.montant_moyen_prescription }} €</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+            <tbody>
+                {% for r in resultats %}
+                <tr>
+                    <td>{{ r.annee }}</td>
+                    <td>{{ r.montant_total_prescription }} €</td>
+                    <td>{{ r.montant_moyen_prescription }} €</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
 
         <h3>Évolution sur plusieurs années</h3>

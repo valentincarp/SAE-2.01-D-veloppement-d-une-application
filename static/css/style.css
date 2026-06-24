@@ -53,7 +53,7 @@ footer {
 }
 
 .export-buttons a {
-    background-color: #2E74B5;
+    background-color: #0a347c;
     color: white;
     padding: 0.5rem 1rem;
     text-decoration: none;
@@ -195,7 +195,7 @@ table th:nth-child(3), table td:nth-child(3) {
 
 /* ===== PAGE ACCUEIL ===== */
 
-.hero {
+.accueil-dashboard {
     text-align: center;
     padding: 50px 20px;
     background: #f4f9ff;
@@ -203,7 +203,7 @@ table th:nth-child(3), table td:nth-child(3) {
     box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
 }
 
-.hero h1 {
+.accueil-dashboard h1 {
     color: #0a347c;
     margin-bottom: 20px;
     font-size: 2.5rem;
@@ -262,7 +262,7 @@ table th:nth-child(3), table td:nth-child(3) {
 .carte {
     background: #f4f9ff;
     padding: 20px;
-    margin-bottom: 20px;
+    margin-top: 3rem;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 80, 180, 0.1);
 }
@@ -300,8 +300,4 @@ table th:nth-child(3), table td:nth-child(3) {
     background-color: #d1ecf1;
     color: #0c5460;
     border-color: #bee5eb;
-}
-
-.carte-admin {
-    margin-top: 3rem;
 }
